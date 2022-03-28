@@ -21,6 +21,8 @@ jobs:
           override: true
       - name: Setup device_query dependencies
         run: sudo apt install libx11-dev
+      - name: Setup rdev dependencies
+        run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -37,7 +39,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup rdev dependencies
-        run: sudo apt-get --assume-yes install libxtst-dev libebdev-dev
+        run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - run: rustup target add wasm32-unknown-unknown
       - uses: actions-rs/cargo@v1
         with:
@@ -55,7 +57,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup rdev dependencies
-        run: sudo apt-get --assume-yes install libxtst-dev libebdev-dev
+        run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - name: Setup eframe dependencies
         run: sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
       - uses: actions-rs/cargo@v1
@@ -91,6 +93,8 @@ jobs:
           override: true
       - name: Setup device_query dependencies
         run: sudo apt install libx11-dev
+      - name: Setup rdev dependencies
+        run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - run: rustup component add clippy
       - uses: actions-rs/cargo@v1
         with:
