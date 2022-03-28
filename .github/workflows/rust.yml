@@ -30,7 +30,13 @@ jobs:
 
   check_wasm:
     name: Check wasm32
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        include:
+        - os: ubuntu-latest
+          headless: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -40,6 +46,8 @@ jobs:
           override: true
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
+      - name: Setup headless environment
+        run: ${{matrix.headless}}
       - run: rustup target add wasm32-unknown-unknown
       - uses: actions-rs/cargo@v1
         with:
