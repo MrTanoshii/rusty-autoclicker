@@ -28,32 +28,6 @@ jobs:
           command: check
           args: --all-features
 
-  check_wasm:
-    name: Check wasm32
-    runs-on: ${{matrix.os}}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        include:
-        - os: ubuntu-latest
-          headless: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Setup rdev dependencies
-        run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
-      - name: Setup headless environment
-        run: ${{matrix.headless}}
-      - run: rustup target add wasm32-unknown-unknown
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --all-features --lib --target wasm32-unknown-unknown
-
   test:
     name: Test Suite
     runs-on: ubuntu-latest
