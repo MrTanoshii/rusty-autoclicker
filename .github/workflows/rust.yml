@@ -9,15 +9,16 @@ env:
   RUSTFLAGS: --cfg=web_sys_unstable_apis
 
 jobs:
-  strategy:
-    matrix:
-      device_query_dep: sudo apt install libx11-dev
-      rdev_dep: sudo apt-get --assume-yes install libxtst-dev libebdev-dev
-      eframe_dep: sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
+  setup:
+    name: Setup
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
 
   check:
     name: Check
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -26,7 +27,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup device_query dependencies
-        run: ${{matrix.device_query_dep}}
+        run: sudo apt install libx11-dev
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -34,7 +35,7 @@ jobs:
 
   check_wasm:
     name: Check wasm32
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -43,7 +44,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup rdev dependencies
-        run: ${{matrix.rdev_dep}}
+        run: sudo apt-get --assume-yes install libxtst-dev libebdev-dev
       - run: rustup target add wasm32-unknown-unknown
       - uses: actions-rs/cargo@v1
         with:
@@ -52,7 +53,7 @@ jobs:
 
   test:
     name: Test Suite
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -61,9 +62,9 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup rdev dependencies
-        run: ${{matrix.rdev_dep}}
+        run: sudo apt-get --assume-yes install libxtst-dev libebdev-dev
       - name: Setup eframe dependencies
-        run: ${{matrix.eframe_dep}}
+        run: sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -71,7 +72,7 @@ jobs:
 
   fmt:
     name: Rustfmt
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -87,7 +88,7 @@ jobs:
 
   clippy:
     name: Clippy
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -96,7 +97,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup device_query dependencies
-        run: ${{matrix.device_query_dep}}
+        run: sudo apt install libx11-dev
       - run: rustup component add clippy
       - uses: actions-rs/cargo@v1
         with:
