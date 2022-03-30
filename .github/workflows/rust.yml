@@ -1,5 +1,8 @@
-on: [push, pull_request]
-  paths: "**.rs"
+on:
+  push:
+    paths: "**.rs"
+  pull_request:
+    paths: "**.rs"
 
 name: CI
 
