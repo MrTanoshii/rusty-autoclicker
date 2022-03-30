@@ -1,8 +1,27 @@
+// #[allow(unused_imports)]
+use device_query::{
+    device_state, DeviceEvents, DeviceQuery, DeviceState, Keycode, MouseButton, MouseState,
+};
 use eframe::{
     egui,
     epaint::{FontFamily, FontId},
     epi,
 };
+
+use std::str;
+
+#[derive(PartialEq)]
+enum ClickBtn {
+    Left,
+    Middle,
+    Right,
+}
+
+#[derive(PartialEq)]
+enum ClickType {
+    Single,
+    Double,
+}
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
@@ -18,6 +37,10 @@ pub struct TemplateApp {
     min_str: String,
     sec_str: String,
     ms_str: String,
+    click_btn: ClickBtn,
+    click_type: ClickType,
+    run_key_pressed: bool,
+    is_running: bool,
 }
 
 impl Default for TemplateApp {
@@ -30,6 +53,10 @@ impl Default for TemplateApp {
             min_str: "0".to_owned(),
             sec_str: "0".to_owned(),
             ms_str: "0".to_owned(),
+            click_btn: ClickBtn::Left,
+            click_type: ClickType::Single,
+            run_key_pressed: false,
+            is_running: false,
         }
     }
 }
@@ -58,7 +85,7 @@ impl epi::App for TemplateApp {
     ) {
         let mut style: egui::Style = (*ctx.style()).clone();
         let font = FontId {
-            size: 20.0,
+            size: 16.0,
             family: FontFamily::Monospace,
         };
         style.override_font_id = Some(font);
@@ -89,6 +116,10 @@ impl epi::App for TemplateApp {
             min_str,
             sec_str,
             ms_str,
+            click_btn,
+            click_type,
+            run_key_pressed,
+            is_running,
         } = self;
 
         sanitize_time(hr_str);
@@ -112,7 +143,25 @@ impl epi::App for TemplateApp {
         if !hr_str.is_empty() {
             ms = ms_str.parse().unwrap();
         }
-        println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
+        // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
+
+        let device_state = DeviceState::new();
+
+        let mouse: MouseState = device_state.get_mouse();
+        let keys: Vec<Keycode> = device_state.get_keys();
+
+        if keys.contains(&Keycode::F6) {
+            *run_key_pressed = true;
+        } else {
+            if *run_key_pressed {
+                *run_key_pressed = false;
+                if *is_running {
+                    *is_running = false
+                } else {
+                    *is_running = true
+                }
+            }
+        }
 
         // Examples of how to create different panels and windows.
         // Pick whichever suits you.
@@ -142,21 +191,12 @@ impl epi::App for TemplateApp {
             if ui.button("Increment").clicked() {
                 *value += 1.0;
             }
-
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 0.0;
-                    ui.label("powered by ");
-                    ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-                    ui.label(" and ");
-                    ui.hyperlink_to("eframe", "https://github.com/emilk/egui/tree/master/eframe");
-                });
-            });
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
 
+            ui.heading("Click Interval");
             ui.horizontal_wrapped(|ui| {
                 ui.add(
                     egui::TextEdit::singleline(hr_str)
@@ -184,15 +224,50 @@ impl epi::App for TemplateApp {
                 ui.label("ms");
             });
 
-            ui.heading(hr_str);
+            ui.separator();
 
-            ui.heading("eframe template");
-            ui.hyperlink("https://github.com/emilk/eframe_template");
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/master/",
-                "Source code."
-            ));
-            egui::warn_if_debug_build(ui);
+            ui.horizontal_wrapped(|ui| {
+                ui.label("Mouse Button");
+                ui.selectable_value(click_btn, ClickBtn::Left, "Left");
+                ui.selectable_value(click_btn, ClickBtn::Middle, "Middle");
+                ui.selectable_value(click_btn, ClickBtn::Right, "Right");
+            });
+
+            ui.separator();
+
+            ui.horizontal_wrapped(|ui| {
+                ui.label("Click Type");
+                ui.selectable_value(click_type, ClickType::Single, "Single");
+                ui.selectable_value(click_type, ClickType::Double, "Double");
+            });
+
+            ui.separator();
+
+            let mouse_txt = format!("Mouse position: {:?}", mouse.coords);
+            ui.heading(mouse_txt);
+            let key_txt = format!("Key pressed: {:?}", keys);
+            ui.heading(key_txt);
+            ui.heading(format!("F6 pressed: {}", run_key_pressed));
+            ui.heading(format!("Clicking: {}", is_running));
+
+            ui.separator();
+
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::RIGHT), |ui| {
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 5.0;
+                    ui.hyperlink_to("eframe", "https://github.com/emilk/egui/tree/master/eframe");
+                    ui.label(" and ");
+                    ui.hyperlink_to("egui", "https://github.com/emilk/egui");
+                    ui.label("powered by ");
+                    ui.hyperlink_to(
+                        "rusty-autoclicker",
+                        "https://github.com/MrTanoshii/rusty-autoclicker",
+                    );
+                });
+                ui.horizontal(|ui| {
+                    egui::warn_if_debug_build(ui);
+                });
+            });
         });
 
         if false {
