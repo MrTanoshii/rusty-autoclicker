@@ -1,21 +1,20 @@
-// #[allow(unused_imports)]
+// #![allow(unused_imports)]
+use std::{
+    env, str, thread,
+    time::{Duration, Instant},
+};
+
 use device_query::{
     device_state, DeviceEvents, DeviceQuery, DeviceState, Keycode, MouseButton, MouseState,
 };
+
+use rdev::{simulate, Button, EventType, SimulateError};
+
 use eframe::{
     egui,
     epaint::{FontFamily, FontId},
     epi,
 };
-
-use std::str;
-
-#[derive(PartialEq)]
-enum ClickBtn {
-    Left,
-    Middle,
-    Right,
-}
 
 #[derive(PartialEq)]
 enum ClickType {
@@ -37,10 +36,12 @@ pub struct TemplateApp {
     min_str: String,
     sec_str: String,
     ms_str: String,
-    click_btn: ClickBtn,
+    click_btn: Button,
     click_type: ClickType,
     run_key_pressed: bool,
     is_running: bool,
+    run_key: Keycode,
+    last_now: Instant,
 }
 
 impl Default for TemplateApp {
@@ -52,11 +53,13 @@ impl Default for TemplateApp {
             hr_str: "0".to_owned(),
             min_str: "0".to_owned(),
             sec_str: "0".to_owned(),
-            ms_str: "0".to_owned(),
-            click_btn: ClickBtn::Left,
+            ms_str: "100".to_owned(),
+            click_btn: Button::Left,
             click_type: ClickType::Single,
             run_key_pressed: false,
             is_running: false,
+            run_key: Keycode::F6,
+            last_now: Instant::now(),
         }
     }
 }
@@ -71,9 +74,23 @@ fn sanitize_time(string: &mut String) {
     };
 }
 
+// Simulate event - rdev crate
+fn send(event_type: &EventType) {
+    match simulate(event_type) {
+        Ok(()) => (),
+        Err(SimulateError) => {
+            println!("We could not send {:?}", event_type);
+        }
+    }
+    // Let ths OS catchup (at least MacOS)
+    if env::consts::OS == "macos" {
+        thread::sleep(Duration::from_millis(20u64));
+    }
+}
+
 impl epi::App for TemplateApp {
     fn name(&self) -> &str {
-        "eframe template"
+        "Rusty AutoClicker"
     }
 
     /// Called once before the first frame.
@@ -120,6 +137,8 @@ impl epi::App for TemplateApp {
             click_type,
             run_key_pressed,
             is_running,
+            run_key,
+            last_now,
         } = self;
 
         sanitize_time(hr_str);
@@ -127,20 +146,20 @@ impl epi::App for TemplateApp {
         sanitize_time(sec_str);
         sanitize_time(ms_str);
 
-        let mut hr: i32 = 0;
+        let mut hr: u64 = 0;
         if !hr_str.is_empty() {
             hr = hr_str.parse().unwrap();
         }
-        let mut min: i32 = 0;
-        if !hr_str.is_empty() {
+        let mut min: u64 = 0;
+        if !min_str.is_empty() {
             min = min_str.parse().unwrap();
         }
-        let mut sec: i32 = 0;
-        if !hr_str.is_empty() {
+        let mut sec: u64 = 0;
+        if !sec_str.is_empty() {
             sec = sec_str.parse().unwrap();
         }
-        let mut ms: i32 = 0;
-        if !hr_str.is_empty() {
+        let mut ms: u64 = 0;
+        if !ms_str.is_empty() {
             ms = ms_str.parse().unwrap();
         }
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
@@ -150,16 +169,43 @@ impl epi::App for TemplateApp {
         let mouse: MouseState = device_state.get_mouse();
         let keys: Vec<Keycode> = device_state.get_keys();
 
-        if keys.contains(&Keycode::F6) {
+        // Toggle clicking
+        if keys.contains(&run_key) {
             *run_key_pressed = true;
         } else {
             if *run_key_pressed {
                 *run_key_pressed = false;
                 if *is_running {
-                    *is_running = false
+                    *is_running = false;
                 } else {
-                    *is_running = true
+                    *is_running = true;
+                    *last_now = Instant::now();
                 }
+            }
+        }
+
+        let delay: u64 = (hr * 3600000u64) + (min * 60000) + (sec * 1000) + ms;
+
+        let update_now = Instant::now();
+        if *is_running
+            && update_now
+                .checked_duration_since(*last_now)
+                .unwrap()
+                .as_millis() as u64
+                >= delay
+        {
+            #[cfg(debug_assertions)]
+            println!(
+                "Click {:?}: {:?}",
+                click_btn,
+                update_now.checked_duration_since(*last_now).unwrap(),
+            );
+            *last_now = Instant::now();
+            send(&EventType::ButtonPress(*click_btn));
+            send(&EventType::ButtonRelease(*click_btn));
+            if *click_type == ClickType::Double {
+                send(&EventType::ButtonPress(*click_btn));
+                send(&EventType::ButtonRelease(*click_btn));
             }
         }
 
@@ -228,17 +274,21 @@ impl epi::App for TemplateApp {
 
             ui.horizontal_wrapped(|ui| {
                 ui.label("Mouse Button");
-                ui.selectable_value(click_btn, ClickBtn::Left, "Left");
-                ui.selectable_value(click_btn, ClickBtn::Middle, "Middle");
-                ui.selectable_value(click_btn, ClickBtn::Right, "Right");
+                ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.selectable_value(click_btn, Button::Right, "Right");
+                    ui.selectable_value(click_btn, Button::Middle, "Middle");
+                    ui.selectable_value(click_btn, Button::Left, "Left");
+                });
             });
 
             ui.separator();
 
             ui.horizontal_wrapped(|ui| {
                 ui.label("Click Type");
-                ui.selectable_value(click_type, ClickType::Single, "Single");
-                ui.selectable_value(click_type, ClickType::Double, "Double");
+                ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.selectable_value(click_type, ClickType::Double, "Double");
+                    ui.selectable_value(click_type, ClickType::Single, "Single");
+                });
             });
 
             ui.separator();
@@ -278,5 +328,8 @@ impl epi::App for TemplateApp {
                 ui.label("You would normally chose either panels OR windows.");
             });
         }
+
+        // Keep requesting updates
+        ctx.request_repaint();
     }
 }
