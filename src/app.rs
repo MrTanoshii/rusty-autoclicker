@@ -35,15 +35,13 @@ impl Default for TemplateApp {
 }
 
 // Sanitation to only allow numbers required
-fn sanitize_time(string: &mut String) -> &mut String {
-    while string.len() > 1 && string.chars().nth(0).unwrap() == '0' {
+fn sanitize_time(string: &mut String) {
+    while string.len() > 1 && string.starts_with('0') {
         string.remove(0);
-        print!("This ran")
     }
     if string.len() >= 5 {
         string.truncate(5usize)
     };
-    return string;
 }
 
 impl epi::App for TemplateApp {
@@ -99,19 +97,19 @@ impl epi::App for TemplateApp {
         sanitize_time(ms_str);
 
         let mut hr: i32 = 0;
-        if hr_str.is_empty() != true {
+        if !hr_str.is_empty() {
             hr = hr_str.parse().unwrap();
         }
         let mut min: i32 = 0;
-        if hr_str.is_empty() != true {
+        if !hr_str.is_empty() {
             min = min_str.parse().unwrap();
         }
         let mut sec: i32 = 0;
-        if hr_str.is_empty() != true {
+        if !hr_str.is_empty() {
             sec = sec_str.parse().unwrap();
         }
         let mut ms: i32 = 0;
-        if hr_str.is_empty() != true {
+        if !hr_str.is_empty() {
             ms = ms_str.parse().unwrap();
         }
         println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
