@@ -104,7 +104,7 @@ jobs:
           target: x86_64-apple-darwin
           override: true
       - name: Setup apple dependencies
-        run: sudo apt-get --assume-yes install apt install clang gcc g++ zlib1g-dev libmpc-dev libmpfr-dev libgmp-dev
+        run: sudo apt-get --assume-yes install clang gcc g++ zlib1g-dev libmpc-dev libmpfr-dev libgmp-dev
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
