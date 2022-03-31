@@ -12,6 +12,7 @@ env:
   # https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Clipboard.html
   # https://rustwasm.github.io/docs/wasm-bindgen/web-sys/unstable-apis.html
   RUSTFLAGS: --cfg=web_sys_unstable_apis
+  CARGO_TERM_COLOR: always
 
 jobs:
   check:
@@ -50,7 +51,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --lib
+          args: --verbose --lib
 
   win_msvc_build:
     name: Windows MSVC Build
@@ -66,7 +67,7 @@ jobs:
         with:
           use-cross: true
           command: build
-          args: --target x86_64-pc-windows-msvc
+          args: --verbose --target x86_64-pc-windows-msvc
 
   linux_gnu_build:
     name: Linux GNU Build
@@ -82,7 +83,7 @@ jobs:
         with:
           use-cross: true
           command: build
-          args: --target x86_64-unknown-linux-gnu
+          args: --verbose --target x86_64-unknown-linux-gnu
 
   apple_darwin_build:
     name: Apple Darwin Build
@@ -98,7 +99,7 @@ jobs:
         with:
           use-cross: true
           command: build
-          args: --target x86_64-apple-darwin
+          args: --verbose --target x86_64-apple-darwin
 
   fmt:
     name: Rustfmt
