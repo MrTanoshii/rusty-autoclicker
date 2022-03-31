@@ -3,7 +3,7 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
 mod app;
-pub use app::TemplateApp;
+pub use app::RustyAutoClickerApp;
 
 // ----------------------------------------------------------------------------
 // When compiling for web:
@@ -24,6 +24,6 @@ pub fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue> {
     // Redirect tracing to console.log and friends:
     tracing_wasm::set_as_global_default();
 
-    let app = TemplateApp::default();
+    let app = RustyAutoClickerApp::default();
     eframe::start_web(canvas_id, Box::new(app))
 }
