@@ -44,6 +44,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Setup device_query dependencies
+        run: sudo apt install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - name: Setup eframe dependencies
@@ -79,6 +81,8 @@ jobs:
           toolchain: stable
           target: x86_64-unknown-linux-gnu
           override: true
+      - name: Setup device_query dependencies
+        run: sudo apt install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - name: Setup eframe dependencies
