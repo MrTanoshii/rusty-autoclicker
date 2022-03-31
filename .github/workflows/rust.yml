@@ -107,7 +107,6 @@ jobs:
         run: sudo apt-get --assume-yes install clang gcc g++ zlib1g-dev libmpc-dev libmpfr-dev libgmp-dev
       - uses: actions-rs/cargo@v1
         with:
-          use-cross: true
           command: build
           args: --verbose --target x86_64-apple-darwin
 
