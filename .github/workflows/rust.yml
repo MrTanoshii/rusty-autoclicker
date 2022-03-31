@@ -26,7 +26,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup device_query dependencies
-        run: sudo apt install libx11-dev
+        run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - uses: actions-rs/cargo@v1
@@ -45,7 +45,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Setup device_query dependencies
-        run: sudo apt install libx11-dev
+        run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - name: Setup eframe dependencies
@@ -82,7 +82,7 @@ jobs:
           target: x86_64-unknown-linux-gnu
           override: true
       - name: Setup device_query dependencies
-        run: sudo apt install libx11-dev
+        run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - name: Setup eframe dependencies
@@ -138,7 +138,7 @@ jobs:
           components: clippy
           override: true
       - name: Setup device_query dependencies
-        run: sudo apt install libx11-dev
+        run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
       - uses: actions-rs/cargo@v1
