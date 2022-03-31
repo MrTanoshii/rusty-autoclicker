@@ -3,6 +3,7 @@ on:
     paths: "**.rs"
   pull_request:
     paths: "**.rs"
+  workflow_dispatch:
 
 name: CI
 
