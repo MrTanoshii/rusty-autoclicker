@@ -39,7 +39,7 @@ enum AppMode {
 #[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
 pub struct RustyAutoClickerApp {
     // this how you opt-out of serialization of a member
-    #[cfg_attr(feature = "persistence", serde(skip), derive(Copy))]
+    #[cfg_attr(feature = "persistence", serde(skip))]
     // Text input strings
     hr_str: String,
     min_str: String,
