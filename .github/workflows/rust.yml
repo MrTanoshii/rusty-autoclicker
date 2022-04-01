@@ -108,6 +108,25 @@ jobs:
           command: build
           args: --verbose --target x86_64-apple-darwin
 
+  apple_darwin_cross_build:
+    name: Apple Darwin Cross Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-apple-darwin
+          override: true    
+      - name: Setup build essential dependencies
+        run: sudo apt-get install build-essential
+      - name: Setup apple dependencies
+        run: sudo apt-get --assume-yes install clang gcc g++ zlib1g-dev libmpc-dev libmpfr-dev libgmp-dev libc6-dev
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose --target x86_64-apple-darwin
+
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
