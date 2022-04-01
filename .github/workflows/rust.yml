@@ -121,7 +121,7 @@ jobs:
       - name: Setup build essential dependencies
         run: sudo apt-get install build-essential
       - name: Setup apple dependencies
-        run: sudo apt-get --assume-yes install clang cmake gcc g++ zlib1g-dev libmpc-dev libmpfr-dev libgmp-dev
+        run: sudo apt-get --assume-yes install clang cmake gcc g++ zlib1g-dev libmpc-dev libmpfr-dev libgmp-dev libgcc-10-dev libstdc++-10-dev
       - uses: actions-rs/cargo@v1
         with:
           command: build
