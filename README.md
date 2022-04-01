@@ -1,4 +1,10 @@
-# rusty-autoclicker
+# Rusty AutoClicker
+<div align="center">
+  
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v1.0.0/rusty-autoclicker_15o7LSwR3T.png)](#)
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v1.0.0/rusty-autoclicker_ucpN0Ra6EU.png)](#)
+  
+</div>
 
 ### Testing locally
 
