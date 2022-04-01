@@ -88,7 +88,7 @@ jobs:
       - name: Setup eframe dependencies
         run: sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
       - name: Setup linux dependencies
-        run: sudo apt-get install clang
+        run: sudo apt-get install libxt-dev
       - uses: actions-rs/cargo@v1
         with:
           use-cross: true
