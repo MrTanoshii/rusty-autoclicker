@@ -95,7 +95,7 @@ jobs:
 
   apple_darwin_build:
     name: Apple Darwin Build
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -103,10 +103,6 @@ jobs:
           toolchain: stable
           target: x86_64-apple-darwin
           override: true
-      - name: Setup build essential dependencies
-        run: sudo apt-get install build-essential
-      - name: Setup apple dependencies
-        run: sudo apt-get --assume-yes install clang gcc g++ zlib1g-dev libmpc-dev libmpfr-dev libgmp-dev
       - uses: actions-rs/cargo@v1
         with:
           command: build
