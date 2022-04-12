@@ -1,0 +1,32 @@
+on:
+  push:
+    paths: "**.rs"
+  pull_request:
+    paths: "**.rs"
+  workflow_dispatch:
+
+name: Windows Build
+
+env:
+  # This is required to enable the web_sys clipboard API which egui_web uses
+  # https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Clipboard.html
+  # https://rustwasm.github.io/docs/wasm-bindgen/web-sys/unstable-apis.html
+  RUSTFLAGS: --cfg=web_sys_unstable_apis
+  CARGO_TERM_COLOR: always
+
+jobs:
+  win_gnu_build:
+    name: Windows GNU Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-pc-windows-gnu
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --verbose --target x86_64-pc-windows-gnu
