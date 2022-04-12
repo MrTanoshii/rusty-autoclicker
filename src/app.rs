@@ -273,6 +273,14 @@ impl epi::App for RustyAutoClickerApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
+        // Print time to between start of old and new frames
+        #[cfg(debug_assertions)]
+        println!(
+            "Frame delta: {:?}",
+            Instant::now()
+                .checked_duration_since(self.frame_start)
+                .unwrap()
+        );
         self.frame_start = Instant::now();
 
         // Get mouse & keyboard states
@@ -778,6 +786,7 @@ impl epi::App for RustyAutoClickerApp {
         // Keep updating frame
         ctx.request_repaint();
 
+        // Print time to process frame
         #[cfg(debug_assertions)]
         println!(
             "Frame time: {:?}",
