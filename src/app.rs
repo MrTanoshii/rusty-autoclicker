@@ -489,7 +489,6 @@ impl epi::App for RustyAutoClickerApp {
 
                 if ui
                     .add_enabled(!self.is_autoclicking, egui::Button::new("⌨ Hotkeys"))
-                    .on_disabled_hover_text("Disabled while autoclicking")
                     .clicked()
                 {
                     self.hotkey_window_open = true
