@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Latest Version](https://img.shields.io/badge/Rusty%20AutoClicker-1.1.0-blue)](https://www.rust-lang.org/)
+[![Latest Version](https://img.shields.io/badge/Rusty%20AutoClicker-1.1.0-blue)](https://github.com/MrTanoshii/rusty-autoclicker)
 [![CC0-1.0 License](https://img.shields.io/badge/License-CC0--1.0-blue)](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/LICENSE)
 [![Rust Check Status](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/rust_check.yml/badge.svg)](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/rust_check.yml)
 [![Linux Build Status](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/linux_build.yml/badge.svg)](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/linux_build.yml)
