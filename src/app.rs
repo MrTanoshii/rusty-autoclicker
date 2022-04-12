@@ -499,7 +499,7 @@ impl epi::App for RustyAutoClickerApp {
                     ui.set_enabled(false);
                 };
                 ui.selectable_value(&mut self.app_mode, AppMode::Humanlike, "😆 Humanlike")
-                    .on_hover_text("Not yet implemented");
+                    .on_hover_text("Autoclick emulating human clicking");
             });
         });
 
