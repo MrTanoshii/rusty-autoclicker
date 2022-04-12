@@ -58,6 +58,7 @@ pub struct RustyAutoClickerApp {
 
     // Time
     last_now: Instant,
+    frame_start: Instant,
 
     // Counter
     click_counter: u64,
@@ -105,6 +106,7 @@ impl Default for RustyAutoClickerApp {
 
             // Time
             last_now: Instant::now(),
+            frame_start: Instant::now(),
 
             // Counter
             click_counter: 0u64,
@@ -271,6 +273,8 @@ impl epi::App for RustyAutoClickerApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
+        self.frame_start = Instant::now();
+
         // Get mouse & keyboard states
         let device_state = DeviceState::new();
         let mouse: MouseState = device_state.get_mouse();
@@ -771,7 +775,15 @@ impl epi::App for RustyAutoClickerApp {
                 });
         }
 
-        // Keep requesting updates
+        // Keep updating frame
         ctx.request_repaint();
+
+        #[cfg(debug_assertions)]
+        println!(
+            "Frame time: {:?}",
+            Instant::now()
+                .checked_duration_since(self.frame_start)
+                .unwrap()
+        );
     }
 }
