@@ -19,16 +19,19 @@
 
 ## Building from source
 
-Make sure you are using the latest version of stable rust by running `rustup update`.
+### OS specific requirements
 
-`cargo run --release`
-
-On Linux you need to first run:
-
-`sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev`
-
-On Fedora Rawhide you need to run:
+#### Fedora Rawhide (not tested)
 
 `dnf install clang clang-devel clang-tools-extra speech-dispatcher-devel libxkbcommon-devel pkg-config openssl-devel libxcb-devel`
 
-For running the `build_web.sh` script you also need to install `jq` and `binaryen` with your packet manager of choice.
+#### Linux
+
+`sudo apt-get install libx11-dev libxtst-dev libevdev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev`
+
+### Running
+
+```shell
+rustup update
+cargo run --release
+```
