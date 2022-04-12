@@ -3,7 +3,7 @@ name = "rusty-autoclicker"
 version = "1.0.0"
 repository = "https://github.com/MrTanoshii/rusty-autoclicker"
 readme = "README.md"
-rust-version = "1.59"
+rust-version = "1.60"
 license-file = "LICENSE"
 edition = "2021"
 
@@ -13,11 +13,11 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+rand = "0.8"
 device_query = "1.0"
 eframe = "0.17" # Gives us egui, epi and web+native backends
 rdev = "0.5"
 sanitizer = { version = "0.1", features = ["derive"] }
-
 serde = { version = "1", features = ["derive"], optional = true }
 
 [features]
