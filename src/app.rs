@@ -235,7 +235,7 @@ fn autoclick(
 
 impl epi::App for RustyAutoClickerApp {
     fn name(&self) -> &str {
-        "Rusty AutoClicker v1.0.0"
+        "Rusty AutoClicker v1.1.0"
     }
 
     /// Called once before the first frame.
