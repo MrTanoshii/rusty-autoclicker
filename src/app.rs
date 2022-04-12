@@ -4,7 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use rand::{thread_rng, Rng};
+use rand::{prelude::ThreadRng, thread_rng, Rng};
 
 use device_query::{DeviceQuery, DeviceState, Keycode, MouseState};
 
@@ -90,6 +90,9 @@ pub struct RustyAutoClickerApp {
     click_btn: Button,
     click_type: ClickType,
     click_position: ClickPosition,
+
+    // RNG
+    rng_thread: ThreadRng,
 }
 
 impl Default for RustyAutoClickerApp {
@@ -138,6 +141,9 @@ impl Default for RustyAutoClickerApp {
             click_btn: Button::Left,
             click_type: ClickType::Single,
             click_position: ClickPosition::Mouse,
+
+            // RNG
+            rng_thread: thread_rng(),
         }
     }
 }
@@ -182,6 +188,7 @@ fn autoclick(
     click_coord: (f64, f64),
     click_type: ClickType,
     click_btn: Button,
+    mut rng_thread: ThreadRng,
 ) {
     // Set the amount of runs/clicks required
     let run_amount: u8 = if click_type == ClickType::Single {
@@ -208,12 +215,11 @@ fn autoclick(
         }
     // Autoclick to emulate a humanlike clicks
     } else if app_mode == AppMode::Humanlike {
-        let mut rng = thread_rng();
         for n in 1..=run_amount {
             // Sleep between clicks
             if n % 2 == 0 {
                 thread::sleep(Duration::from_millis(
-                    rng.gen_range(DURATION_DOUBLE_CLICK_MIN..DURATION_DOUBLE_CLICK_MAX),
+                    rng_thread.gen_range(DURATION_DOUBLE_CLICK_MIN..DURATION_DOUBLE_CLICK_MAX),
                 ));
             }
 
@@ -228,7 +234,7 @@ fn autoclick(
 
             send(&EventType::ButtonPress(click_btn));
             thread::sleep(Duration::from_millis(
-                rng.gen_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
+                rng_thread.gen_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
             ));
             send(&EventType::ButtonRelease(click_btn));
         }
@@ -348,6 +354,7 @@ impl epi::App for RustyAutoClickerApp {
                 {
                     self.click_counter = 0u64;
                     self.is_autoclicking = true;
+                    self.rng_thread = thread_rng();
                 }
                 self.last_now = Instant::now();
             }
@@ -403,6 +410,7 @@ impl epi::App for RustyAutoClickerApp {
                 (click_x, click_y),
                 self.click_type,
                 self.click_btn,
+                self.rng_thread.clone(),
             );
 
             // Increment click counter and stop autoclicking if completed
