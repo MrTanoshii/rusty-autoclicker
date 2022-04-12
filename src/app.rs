@@ -4,6 +4,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use rand::{thread_rng, Rng};
+
 use device_query::{DeviceQuery, DeviceState, Keycode, MouseState};
 
 use rdev::{simulate, Button, EventType, SimulateError};
@@ -28,11 +30,16 @@ enum ClickPosition {
     Coord,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 enum AppMode {
     Bot,
     Humanlike,
 }
+
+const DURATION_CLICK_MIN: u64 = 20;
+const DURATION_CLICK_MAX: u64 = 40;
+const DURATION_DOUBLE_CLICK_MIN: u64 = 30;
+const DURATION_DOUBLE_CLICK_MAX: u64 = 60;
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
@@ -168,30 +175,61 @@ fn send(event_type: &EventType) {
 }
 
 fn autoclick(
+    app_mode: AppMode,
     click_position: ClickPosition,
     click_coord: (f64, f64),
     click_type: ClickType,
     click_btn: Button,
 ) {
-    // Move mouse to saved coordinates requested
-    if click_position == ClickPosition::Coord {
-        send(&EventType::MouseMove {
-            x: click_coord.0,
-            y: click_coord.1,
-        })
-    }
-    send(&EventType::ButtonPress(click_btn));
-    send(&EventType::ButtonRelease(click_btn));
-    // Repeat if double clicks requested
-    if click_type == ClickType::Double {
-        if click_position == ClickPosition::Coord {
-            send(&EventType::MouseMove {
-                x: click_coord.0,
-                y: click_coord.1,
-            })
+    // Set the amount of runs/clicks required
+    let run_amount: u8 = if click_type == ClickType::Single {
+        1
+    } else if click_type == ClickType::Double {
+        2
+    } else {
+        0
+    };
+
+    // Autoclick as fast as possible
+    if app_mode == AppMode::Bot {
+        for _n in 1..=run_amount {
+            // Move mouse to saved coordinates if requested
+            if click_position == ClickPosition::Coord {
+                send(&EventType::MouseMove {
+                    x: click_coord.0,
+                    y: click_coord.1,
+                })
+            }
+
+            send(&EventType::ButtonPress(click_btn));
+            send(&EventType::ButtonRelease(click_btn));
         }
-        send(&EventType::ButtonPress(click_btn));
-        send(&EventType::ButtonRelease(click_btn));
+    // Autoclick to emulate a humanlike clicks
+    } else if app_mode == AppMode::Humanlike {
+        let mut rng = thread_rng();
+        for n in 1..=run_amount {
+            // Sleep between clicks
+            if n % 2 == 0 {
+                thread::sleep(Duration::from_millis(
+                    rng.gen_range(DURATION_DOUBLE_CLICK_MIN..DURATION_DOUBLE_CLICK_MAX),
+                ));
+            }
+
+            // TODO: Implement non blocking smooth mouse movement (i.e. it should not mouse directly)
+            // Move mouse to saved coordinates if requested
+            if click_position == ClickPosition::Coord {
+                send(&EventType::MouseMove {
+                    x: click_coord.0,
+                    y: click_coord.1,
+                })
+            }
+
+            send(&EventType::ButtonPress(click_btn));
+            thread::sleep(Duration::from_millis(
+                rng.gen_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
+            ));
+            send(&EventType::ButtonRelease(click_btn));
+        }
     }
 }
 
@@ -348,6 +386,7 @@ impl epi::App for RustyAutoClickerApp {
             self.last_now = Instant::now();
 
             autoclick(
+                self.app_mode,
                 self.click_position,
                 (click_x, click_y),
                 self.click_type,
