@@ -756,7 +756,7 @@ impl epi::App for RustyAutoClickerApp {
                                 [100.0f32, 32.0f32],
                                 egui::widgets::Button::new("Set coords"),
                             )
-                            .on_hover_text("L Click cannot be changed")
+                            .on_hover_text("Note: L Click cannot be changed")
                             .clicked()
                         {
                             // Allow keybind only if app is not busy
