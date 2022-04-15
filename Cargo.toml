@@ -26,6 +26,8 @@ persistence = ["eframe/persistence", "serde"] # Enable if you want to persist ap
 
 [profile.release]
 opt-level = 3 # all optimizations
+lto = true
+codegen-units = 1
 
 [patch.crates-io]
 
