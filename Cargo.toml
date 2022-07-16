@@ -1,9 +1,9 @@
 [package]
 name = "rusty-autoclicker"
-version = "1.1.0"
+version = "1.2.0"
 repository = "https://github.com/MrTanoshii/rusty-autoclicker"
 readme = "README.md"
-rust-version = "1.60"
+rust-version = "1.62"
 license-file = "LICENSE"
 edition = "2021"
 

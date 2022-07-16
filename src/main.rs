@@ -9,6 +9,7 @@ use eframe::egui;
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let native_options = eframe::NativeOptions {
+        always_on_top: true,
         decorated: true,
         initial_window_size: Some(egui::vec2(550f32, 309f32)),
         resizable: false,
