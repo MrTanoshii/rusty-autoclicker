@@ -289,7 +289,7 @@ fn autoclick(
 
 impl eframe::App for RustyAutoClickerApp {
     fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
-        return egui::Rgba::TRANSPARENT;
+        egui::Rgba::TRANSPARENT
     }
 
     /// Called by the frame work to save state before shutdown.
