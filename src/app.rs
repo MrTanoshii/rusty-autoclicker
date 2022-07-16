@@ -77,7 +77,7 @@ pub struct RustyAutoClickerApp {
 
     // Window state
     hotkey_window_open: bool,
-    _coord_window_open: bool,
+    window_position: egui::Pos2,
 
     // Key states
     key_pressed_autoclick: bool,
@@ -128,7 +128,7 @@ impl Default for RustyAutoClickerApp {
 
             // Window state
             hotkey_window_open: false,
-            _coord_window_open: false,
+            window_position: egui::Pos2 { x: 0f32, y: 0f32 },
 
             // Key states
             key_pressed_autoclick: false,
@@ -167,6 +167,30 @@ impl RustyAutoClickerApp {
         }
 
         Self::default()
+    }
+
+    fn enter_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
+        self.is_setting_coord = true;
+        self.window_position = frame.info.window_info.clone().unwrap().position;
+        frame.set_window_size(egui::vec2(400f32, 30f32));
+        frame.set_decorations(false);
+    }
+
+    fn follow_cursor(&mut self, frame: &mut eframe::Frame) {
+        let offset = egui::Vec2 { x: 15f32, y: 15f32 };
+        frame.set_window_pos(
+            egui::pos2(
+                self.click_x_str.parse().unwrap(),
+                self.click_y_str.parse().unwrap(),
+            ) + offset,
+        );
+    }
+
+    fn exit_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
+        frame.set_decorations(true);
+        frame.set_window_size(egui::vec2(550f32, 309f32));
+        frame.set_window_pos(self.window_position);
+        self.is_setting_coord = false;
     }
 }
 
@@ -264,6 +288,10 @@ fn autoclick(
 }
 
 impl eframe::App for RustyAutoClickerApp {
+    fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
+        return egui::Rgba::TRANSPARENT;
+    }
+
     /// Called by the frame work to save state before shutdown.
     /// Note that you must enable the `persistence` feature for this to work.
     #[cfg(feature = "persistence")]
@@ -273,7 +301,7 @@ impl eframe::App for RustyAutoClickerApp {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         // Print time to between start of old and new frames
         #[cfg(debug_assertions)]
         println!(
@@ -440,15 +468,10 @@ impl eframe::App for RustyAutoClickerApp {
             self.click_y_str = mouse.coords.1.to_string();
 
             // Stop if mouse left click
-            if mouse.button_pressed[1] {
-                self.is_setting_coord = false;
-            }
-            // Stop if coordinate set key pressed & released
-            else if self.key_set_coord.is_some() && keys.contains(&self.key_set_coord.unwrap()) {
-                self.key_pressed_set_coord = true;
-            } else if self.key_pressed_set_coord {
-                self.is_setting_coord = false;
-                self.key_pressed_set_coord = false;
+            if mouse.button_pressed[1]
+                || (self.key_set_coord.is_some() && keys.contains(&self.key_set_coord.unwrap()))
+            {
+                Self::exit_coordinate_setting(self, frame);
             }
         }
 
@@ -462,260 +485,320 @@ impl eframe::App for RustyAutoClickerApp {
             self.hotkey_window_open = true
         }
 
-        // GUI
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-            egui::menu::bar(ui, |ui| {
-                if self.is_autoclicking {
+        if self.is_setting_coord {
+            egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+                egui::menu::bar(ui, |ui| {
+                    ui.horizontal_wrapped(|ui| {
+                        ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                            if self.is_autoclicking || self.hotkey_window_open {
+                                ui.set_enabled(false);
+                            };
+                            ui.add(
+                                egui::TextEdit::singleline(&mut self.click_y_str)
+                                    .desired_width(50.0f32)
+                                    .hint_text("0"),
+                            );
+                            ui.label("Y");
+                            if self.is_autoclicking || self.hotkey_window_open {
+                                ui.set_enabled(false);
+                            };
+                            ui.add(
+                                egui::TextEdit::singleline(&mut self.click_x_str)
+                                    .desired_width(50.0f32)
+                                    .hint_text("0"),
+                            );
+                            ui.label("X");
+                            ui.separator();
+                            ui.label(format!(
+                                " Set with \"{:}\" / \"L Click\"",
+                                self.key_set_coord.unwrap()
+                            ));
+                        });
+                    });
+                })
+            });
+            Self::follow_cursor(self, frame);
+        } else {
+            println!("{:?}", frame.info.window_info.clone().unwrap().position);
+            // GUI
+            egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+                // The top panel is often a good place for a menu bar:
+                egui::menu::bar(ui, |ui| {
+                    if self.is_autoclicking {
+                        if ui
+                            .button(format!("🖱 STOP ({})", self.key_autoclick.unwrap()))
+                            .clicked()
+                        {
+                            self.is_autoclicking = false;
+                        };
+                    } else {
+                        if self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        }
+                        let text: String = if self.key_autoclick.is_none() {
+                            "🖱 START".to_string()
+                        } else {
+                            format!("🖱 START ({})", self.key_autoclick.unwrap())
+                        };
+                        if ui.button(text).clicked() {
+                            self.is_autoclicking = true
+                        }
+                    }
+
+                    ui.separator();
+                    ui.label("Settings: ");
+
                     if ui
-                        .button(format!("🖱 STOP ({})", self.key_autoclick.unwrap()))
+                        .add_enabled(!self.is_autoclicking, egui::Button::new("⌨ Hotkeys"))
                         .clicked()
                     {
-                        self.is_autoclicking = false;
+                        self.hotkey_window_open = true
                     };
-                } else {
-                    if self.hotkey_window_open {
+
+                    ui.separator();
+                    ui.label("App Mode: ");
+
+                    if self.is_autoclicking || self.hotkey_window_open {
                         ui.set_enabled(false);
-                    }
-                    let text: String = if self.key_autoclick.is_none() {
-                        "🖱 START".to_string()
-                    } else {
-                        format!("🖱 START ({})", self.key_autoclick.unwrap())
                     };
-                    if ui.button(text).clicked() {
-                        self.is_autoclicking = true
-                    }
-                }
+                    ui.selectable_value(&mut self.app_mode, AppMode::Bot, "🖥 Bot")
+                        .on_hover_text("Autoclick as fast as possible");
+                    if self.is_autoclicking || self.hotkey_window_open {
+                        ui.set_enabled(false);
+                    };
+                    ui.selectable_value(&mut self.app_mode, AppMode::Humanlike, "😆 Humanlike")
+                        .on_hover_text("Autoclick emulating human clicking");
+                });
+            });
+
+            egui::CentralPanel::default().show(ctx, |ui| {
+                // The central panel the region left after adding TopPanel's and SidePanel's
+
+                ui.horizontal_wrapped(|ui| {
+                    ui.label("Click Interval");
+
+                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        ui.label("ms");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.ms_str)
+                                .desired_width(40.0f32)
+                                .hint_text("0"),
+                        );
+
+                        ui.label("sec");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.sec_str)
+                                .desired_width(40.0f32)
+                                .hint_text("0"),
+                        );
+
+                        ui.label("min");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.min_str)
+                                .desired_width(40.0f32)
+                                .hint_text("0"),
+                        );
+
+                        ui.label("hr");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.hr_str)
+                                .desired_width(40.0f32)
+                                .hint_text("0"),
+                        );
+                    });
+                });
 
                 ui.separator();
-                ui.label("Settings: ");
 
-                if ui
-                    .add_enabled(!self.is_autoclicking, egui::Button::new("⌨ Hotkeys"))
-                    .clicked()
-                {
-                    self.hotkey_window_open = true
-                };
+                ui.horizontal_wrapped(|ui| {
+                    ui.label("Mouse Button");
+                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.selectable_value(&mut self.click_btn, Button::Right, "Right");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.selectable_value(&mut self.click_btn, Button::Middle, "Middle");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.selectable_value(&mut self.click_btn, Button::Left, "Left");
+                    });
+                });
 
                 ui.separator();
-                ui.label("App Mode: ");
 
-                if self.is_autoclicking || self.hotkey_window_open {
-                    ui.set_enabled(false);
-                };
-                ui.selectable_value(&mut self.app_mode, AppMode::Bot, "🖥 Bot")
-                    .on_hover_text("Autoclick as fast as possible");
-                if self.is_autoclicking || self.hotkey_window_open {
-                    ui.set_enabled(false);
-                };
-                ui.selectable_value(&mut self.app_mode, AppMode::Humanlike, "😆 Humanlike")
-                    .on_hover_text("Autoclick emulating human clicking");
-            });
-        });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
-
-            ui.horizontal_wrapped(|ui| {
-                ui.label("Click Interval");
-
-                ui.with_layout(egui::Layout::right_to_left(), |ui| {
-                    ui.label("ms");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.ms_str)
-                            .desired_width(40.0f32)
-                            .hint_text("0"),
-                    );
-
-                    ui.label("sec");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.sec_str)
-                            .desired_width(40.0f32)
-                            .hint_text("0"),
-                    );
-
-                    ui.label("min");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.min_str)
-                            .desired_width(40.0f32)
-                            .hint_text("0"),
-                    );
-
-                    ui.label("hr");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.hr_str)
-                            .desired_width(40.0f32)
-                            .hint_text("0"),
-                    );
+                ui.horizontal_wrapped(|ui| {
+                    ui.label("Click Type");
+                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.selectable_value(&mut self.click_type, ClickType::Double, "Double");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.selectable_value(&mut self.click_type, ClickType::Single, "Single");
+                    });
                 });
-            });
 
-            ui.separator();
+                ui.separator();
 
-            ui.horizontal_wrapped(|ui| {
-                ui.label("Mouse Button");
-                ui.with_layout(egui::Layout::right_to_left(), |ui| {
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.selectable_value(&mut self.click_btn, Button::Right, "Right");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.selectable_value(&mut self.click_btn, Button::Middle, "Middle");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.selectable_value(&mut self.click_btn, Button::Left, "Left");
+                ui.horizontal_wrapped(|ui| {
+                    ui.label("Click Amount (0 = forever)");
+                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.click_amount_str)
+                                .desired_width(40.0f32)
+                                .hint_text("0"),
+                        );
+                    });
                 });
-            });
 
-            ui.separator();
+                ui.separator();
 
-            ui.horizontal_wrapped(|ui| {
-                ui.label("Click Type");
-                ui.with_layout(egui::Layout::right_to_left(), |ui| {
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.selectable_value(&mut self.click_type, ClickType::Double, "Double");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.selectable_value(&mut self.click_type, ClickType::Single, "Single");
-                });
-            });
-
-            ui.separator();
-
-            ui.horizontal_wrapped(|ui| {
-                ui.label("Click Amount (0 = forever)");
-                ui.with_layout(egui::Layout::right_to_left(), |ui| {
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.click_amount_str)
-                            .desired_width(40.0f32)
-                            .hint_text("0"),
-                    );
-                });
-            });
-
-            ui.separator();
-
-            ui.horizontal_wrapped(|ui| {
-                ui.label("Click Position");
-                ui.with_layout(egui::Layout::right_to_left(), |ui| {
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.click_y_str)
-                            .desired_width(50.0f32)
-                            .hint_text("0"),
-                    );
-                    ui.label("Y");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.click_x_str)
-                            .desired_width(50.0f32)
-                            .hint_text("0"),
-                    );
-                    ui.label("X");
-
+                ui.horizontal_wrapped(|ui| {
+                    ui.label("Click Position");
                     if self.is_autoclicking || self.hotkey_window_open {
                         ui.set_enabled(false);
                     };
                     if ui
-                        .selectable_value(&mut self.click_position, ClickPosition::Coord, "Coords")
+                        .add_sized([80.0f32, 16.0f32], egui::widgets::Button::new("Set Coords"))
                         .clicked()
                     {
-                        self.is_setting_coord = true;
-                        self.key_pressed_set_coord = false;
+                        Self::enter_coordinate_setting(self, frame);
                     };
-                    ui.separator();
-                    ui.selectable_value(&mut self.click_position, ClickPosition::Mouse, "Mouse");
+                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.click_y_str)
+                                .desired_width(50.0f32)
+                                .hint_text("0"),
+                        );
+                        ui.label("Y");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.click_x_str)
+                                .desired_width(50.0f32)
+                                .hint_text("0"),
+                        );
+                        ui.label("X");
+
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        if ui
+                            .selectable_value(
+                                &mut self.click_position,
+                                ClickPosition::Coord,
+                                "Coords",
+                            )
+                            .clicked()
+                        {
+                            self.key_pressed_set_coord = true;
+                        };
+                        ui.separator();
+                        if ui
+                            .selectable_value(
+                                &mut self.click_position,
+                                ClickPosition::Mouse,
+                                "Mouse",
+                            )
+                            .clicked()
+                        {
+                            self.key_pressed_set_coord = false;
+                        };
+                    });
                 });
-            });
 
-            ui.separator();
+                ui.separator();
 
-            let mouse_txt = format!("Mouse position: {:?}", mouse.coords);
-            ui.label(mouse_txt);
-            let key_txt = format!("Key pressed: {:?}", keys);
-            ui.label(key_txt);
-            ui.label(format!("Mouse pressed: {:?}", mouse.button_pressed));
+                let mouse_txt = format!("Mouse position: {:?}", mouse.coords);
+                ui.label(mouse_txt);
+                let key_txt = format!("Key pressed: {:?}", keys);
+                ui.label(key_txt);
+                ui.label(format!("Mouse pressed: {:?}", mouse.button_pressed));
 
-            ui.separator();
+                ui.separator();
 
-            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                if self.is_autoclicking {
-                    if self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    }
-                    if ui
-                        .add_sized(
-                            [120.0f32, 38.0f32],
-                            egui::widgets::Button::new(format!(
-                                "🖱 STOP ({})",
-                                self.key_autoclick.unwrap()
-                            )),
-                        )
-                        .clicked()
-                    {
-                        self.is_autoclicking = false;
-                    };
-                } else {
-                    if self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    }
-                    let text: String = if self.key_autoclick.is_none() {
-                        "🖱 START".to_string()
+                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                    if self.is_autoclicking {
+                        if self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        }
+                        if ui
+                            .add_sized(
+                                [120.0f32, 38.0f32],
+                                egui::widgets::Button::new(format!(
+                                    "🖱 STOP ({})",
+                                    self.key_autoclick.unwrap()
+                                )),
+                            )
+                            .clicked()
+                        {
+                            self.is_autoclicking = false;
+                        };
                     } else {
-                        format!("🖱 START ({})", self.key_autoclick.unwrap())
-                    };
-                    if ui
-                        .add_sized([120.0f32, 38.0f32], egui::widgets::Button::new(text))
-                        .clicked()
-                    {
-                        self.is_autoclicking = true
+                        if self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        }
+                        let text: String = if self.key_autoclick.is_none() {
+                            "🖱 START".to_string()
+                        } else {
+                            format!("🖱 START ({})", self.key_autoclick.unwrap())
+                        };
+                        if ui
+                            .add_sized([120.0f32, 38.0f32], egui::widgets::Button::new(text))
+                            .clicked()
+                        {
+                            self.is_autoclicking = true
+                        }
                     }
-                }
-            });
-        });
-
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::RIGHT), |ui| {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 5.0;
-                    ui.hyperlink_to("eframe", "https://github.com/emilk/egui/tree/master/eframe");
-                    ui.label(" and ");
-                    ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-                    ui.label("powered by ");
-                    ui.hyperlink_to(
-                        "rusty-autoclicker",
-                        "https://github.com/MrTanoshii/rusty-autoclicker",
-                    );
-                    ui.separator();
-                    egui::warn_if_debug_build(ui);
                 });
             });
-        });
+
+            egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+                ui.with_layout(egui::Layout::bottom_up(egui::Align::RIGHT), |ui| {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 5.0;
+                        ui.hyperlink_to(
+                            "eframe",
+                            "https://github.com/emilk/egui/tree/master/eframe",
+                        );
+                        ui.label(" and ");
+                        ui.hyperlink_to("egui", "https://github.com/emilk/egui");
+                        ui.label("powered by ");
+                        ui.hyperlink_to(
+                            "rusty-autoclicker",
+                            "https://github.com/MrTanoshii/rusty-autoclicker",
+                        );
+                        ui.separator();
+                        egui::warn_if_debug_build(ui);
+                    });
+                });
+            });
+        }
 
         // Hotkeys window
         if self.hotkey_window_open {
