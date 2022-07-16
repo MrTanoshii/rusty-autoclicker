@@ -16,6 +16,16 @@ fn main() {
         transparent: true,
         ..Default::default()
     };
-    let app = rusty_autoclicker::RustyAutoClickerApp::default();
-    eframe::run_native(Box::new(app), native_options);
+    eframe::run_native(
+        "Rusty AutoClicker v2.0.0",
+        native_options,
+        Box::new(|cc| {
+            let style = egui::Style {
+                visuals: egui::Visuals::dark(),
+                ..egui::Style::default()
+            };
+            cc.egui_ctx.set_style(style);
+            Box::new(rusty_autoclicker::RustyAutoClickerApp::new(cc))
+        }),
+    );
 }

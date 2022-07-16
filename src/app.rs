@@ -13,7 +13,6 @@ use rdev::{simulate, Button, EventType, SimulateError};
 use eframe::{
     egui,
     epaint::{FontFamily, FontId},
-    epi,
 };
 
 use sanitizer::prelude::StringSanitizer;
@@ -148,6 +147,29 @@ impl Default for RustyAutoClickerApp {
     }
 }
 
+impl RustyAutoClickerApp {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        let ctx = &cc.egui_ctx;
+
+        let mut style: egui::Style = (*ctx.style()).clone();
+        let font = FontId {
+            size: 14.0f32,
+            family: FontFamily::Monospace,
+        };
+        style.override_font_id = Some(font);
+        ctx.set_style(style);
+
+        // Load previous app state (if any).
+        // Note that you must enable the `persistence` feature for this to work.
+        #[cfg(feature = "persistence")]
+        if let Some(storage) = cc.storage {
+            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
+        }
+
+        Self::default()
+    }
+}
+
 // Provides sanitation for input string
 fn sanitize_string(string: &mut String, max_length: usize) {
     // Accept numeric only
@@ -241,44 +263,17 @@ fn autoclick(
     }
 }
 
-impl epi::App for RustyAutoClickerApp {
-    fn name(&self) -> &str {
-        "Rusty AutoClicker v1.1.0"
-    }
-
-    /// Called once before the first frame.
-    fn setup(
-        &mut self,
-        ctx: &egui::Context,
-        _frame: &epi::Frame,
-        _storage: Option<&dyn epi::Storage>,
-    ) {
-        let mut style: egui::Style = (*ctx.style()).clone();
-        let font = FontId {
-            size: 14.0f32,
-            family: FontFamily::Monospace,
-        };
-        style.override_font_id = Some(font);
-        ctx.set_style(style);
-
-        // Load previous app state (if any).
-        // Note that you must enable the `persistence` feature for this to work.
-        #[cfg(feature = "persistence")]
-        if let Some(storage) = _storage {
-            *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
-        }
-    }
-
+impl eframe::App for RustyAutoClickerApp {
     /// Called by the frame work to save state before shutdown.
     /// Note that you must enable the `persistence` feature for this to work.
     #[cfg(feature = "persistence")]
-    fn save(&mut self, storage: &mut dyn epi::Storage) {
-        epi::set_value(storage, epi::APP_KEY, self);
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Print time to between start of old and new frames
         #[cfg(debug_assertions)]
         println!(
