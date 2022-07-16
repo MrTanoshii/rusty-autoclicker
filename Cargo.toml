@@ -15,7 +15,8 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 rand = "0.8"
 device_query = "1.1"
-eframe = "0.18" # Gives us egui, epi and web+native backends
+# eframe = "0.18" # Gives us egui, epi and web+native backends
+eframe = { git = "https://github.com/emilk/egui"}
 rdev = "0.5"
 sanitizer = { version = "0.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
