@@ -757,7 +757,7 @@ impl eframe::App for RustyAutoClickerApp {
                         if ui
                             .add_sized(
                                 [100.0f32, 32.0f32],
-                                egui::widgets::Button::new("Set coords"),
+                                egui::widgets::Button::new("Confirm Coords"),
                             )
                             .on_hover_text("Note: L Click cannot be changed")
                             .clicked()
