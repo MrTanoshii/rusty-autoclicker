@@ -20,11 +20,7 @@ fn main() {
         "Rusty AutoClicker v2.0.0",
         native_options,
         Box::new(|cc| {
-            let style = egui::Style {
-                visuals: egui::Visuals::dark(),
-                ..egui::Style::default()
-            };
-            cc.egui_ctx.set_style(style);
+            cc.egui_ctx.set_visuals(egui::Visuals::dark());
             Box::new(rusty_autoclicker::RustyAutoClickerApp::new(cc))
         }),
     );
