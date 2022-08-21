@@ -12,9 +12,9 @@
 </div>
 <div align="center">
   
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ViGggxUHWg)](#)
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ULHtfvIyAM)](#)
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_qcROvJWUlY)](#)
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ViGggxUHWg.png)](#)
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ULHtfvIyAM.png)](#)
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_qcROvJWUlY.png)](#)
   
 </div>
 
