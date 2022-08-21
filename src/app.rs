@@ -738,7 +738,14 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.label(mouse_txt);
                 let key_txt = format!("Key pressed: {:?}", keys);
                 ui.label(key_txt);
-                ui.label(format!("Mouse pressed: {:?}", mouse.button_pressed));
+                ui.label(format!(
+                    "Mouse pressed: L-{:?} R-{:?} M-{:?} 4-{:?} 5-{:?}",
+                    mouse.button_pressed[1],
+                    mouse.button_pressed[2],
+                    mouse.button_pressed[3],
+                    mouse.button_pressed[4],
+                    mouse.button_pressed[5]
+                ));
 
                 ui.separator();
 
