@@ -489,7 +489,7 @@ impl eframe::App for RustyAutoClickerApp {
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
                 egui::menu::bar(ui, |ui| {
                     ui.horizontal_wrapped(|ui| {
-                        ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                             if self.is_autoclicking || self.hotkey_window_open {
                                 ui.set_enabled(false);
                             };
@@ -577,7 +577,7 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Click Interval");
 
-                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.label("ms");
                         if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
@@ -624,7 +624,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Mouse Button");
-                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
@@ -644,7 +644,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Click Type");
-                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
@@ -660,7 +660,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Click Amount (0 = forever)");
-                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
@@ -685,7 +685,7 @@ impl eframe::App for RustyAutoClickerApp {
                     {
                         Self::enter_coordinate_setting(self, frame);
                     };
-                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
@@ -826,7 +826,7 @@ impl eframe::App for RustyAutoClickerApp {
                                 self.key_autoclick = None;
                             }
                         };
-                        ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                             ui.set_enabled(false);
                             let text: String = if self.key_autoclick.is_none() {
                                 "PRESS ANY KEY".to_string()
@@ -855,7 +855,7 @@ impl eframe::App for RustyAutoClickerApp {
                                 self.is_setting_set_coord_key = true;
                             }
                         };
-                        ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                             ui.set_enabled(false);
                             let text: String = if self.key_set_coord.is_none() {
                                 "PRESS ANY KEY".to_string()
