@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Latest Version](https://img.shields.io/badge/Rusty%20AutoClicker-1.1.0-blue)](https://github.com/MrTanoshii/rusty-autoclicker)
+[![Latest Version](https://img.shields.io/badge/Rusty%20AutoClicker-2.0.0-blue)](https://github.com/MrTanoshii/rusty-autoclicker)
 [![CC0-1.0 License](https://img.shields.io/badge/License-CC0--1.0-blue)](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/LICENSE)
 [![Rust Check](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/rust_check.yml/badge.svg)](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/rust_check.yml)
 [![Linux Build](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/linux_build.yml/badge.svg)](https://github.com/MrTanoshii/rusty-autoclicker/actions/workflows/linux_build.yml)
@@ -12,8 +12,9 @@
 </div>
 <div align="center">
   
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v1.0.0/rusty-autoclicker_15o7LSwR3T.png)](#)
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v1.0.0/rusty-autoclicker_ucpN0Ra6EU.png)](#)
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ViGggxUHWg)](#)
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ULHtfvIyAM)](#)
+[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_qcROvJWUlY)](#)
   
 </div>
 
