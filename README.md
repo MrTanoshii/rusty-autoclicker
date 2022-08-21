@@ -40,3 +40,10 @@ sudo apt-get install libx11-dev libxtst-dev libevdev-dev libxcb-render0-dev libx
 rustup update
 cargo run --release
 ```
+
+### Build
+
+```shell
+rustup update
+cargo build --release
+```
