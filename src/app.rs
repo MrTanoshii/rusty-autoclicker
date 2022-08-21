@@ -166,7 +166,7 @@ impl RustyAutoClickerApp {
             return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
         }
 
-        Self::default()
+        Default::default()
     }
 
     fn enter_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
