@@ -171,7 +171,7 @@ impl RustyAutoClickerApp {
 
     fn enter_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
         self.is_setting_coord = true;
-        self.window_position = frame.info().window_info.clone().unwrap().position;
+        self.window_position = frame.info().window_info.position;
         frame.set_window_size(egui::vec2(400f32, 30f32));
         frame.set_decorations(false);
     }
@@ -519,7 +519,7 @@ impl eframe::App for RustyAutoClickerApp {
             });
             Self::follow_cursor(self, frame);
         } else {
-            println!("{:?}", frame.info().window_info.clone().unwrap().position);
+            println!("{:?}", frame.info().window_info.position);
             // GUI
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
                 // The top panel is often a good place for a menu bar:
