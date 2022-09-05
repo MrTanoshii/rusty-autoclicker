@@ -5,6 +5,8 @@
 
 use eframe::egui;
 
+mod icon;
+
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
@@ -14,6 +16,7 @@ fn main() {
         initial_window_size: Some(egui::vec2(550f32, 309f32)),
         resizable: false,
         transparent: true,
+        icon_data: Some(icon::load_icon()),
         ..Default::default()
     };
     eframe::run_native(
