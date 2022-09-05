@@ -13,7 +13,7 @@
 <div align="center">
   
 [![](/screenshots/v2.1.0/rusty-autoclicker_0dnvDPcANp.png?raw=true "Main Interface")](#)
-[![](/screenshots/v2.1.0/rusty-autoclicker_a4asg2fXnT.png?raw=true) "Hotkey Change"](#)
+[![](/screenshots/v2.1.0/rusty-autoclicker_a4asg2fXnT.png?raw=true "Hotkey Change")](#)
 [![](/screenshots/v2.1.0/rusty-autoclicker_ClJzyc8yHz.png?raw=true "Setting Coordinates")](#)
   
 </div>
