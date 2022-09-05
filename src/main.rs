@@ -20,7 +20,7 @@ fn main() {
         ..Default::default()
     };
     eframe::run_native(
-        "Rusty AutoClicker v2.0.0",
+        "Rusty AutoClicker v2.1.0",
         native_options,
         Box::new(|cc| {
             cc.egui_ctx.set_visuals(egui::Visuals::dark());
