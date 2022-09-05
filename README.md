@@ -32,6 +32,10 @@ dnf install clang clang-devel clang-tools-extra speech-dispatcher-devel libxkbco
 
 ```shell
 sudo apt-get install libx11-dev libxtst-dev libevdev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
+
+# Install `libfontconfig-dev` if you get the following error
+# error: failed to run custom build command for `servo-fontconfig-sys v5.1.0`
+sudo apt-get install libfontconfig-dev
 ```
 
 ### Running
