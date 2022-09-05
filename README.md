@@ -12,9 +12,9 @@
 </div>
 <div align="center">
   
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ViGggxUHWg.png)](#)
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_ULHtfvIyAM.png)](#)
-[![](https://github.com/MrTanoshii/rusty-autoclicker/blob/main/screenshots/v2.0.0/rusty-autoclicker_qcROvJWUlY.png)](#)
+[![](/screenshots/v2.1.0/rusty-autoclicker_0dnvDPcANp.png?raw=true "Main Interface")](#)
+[![](/screenshots/v2.1.0/rusty-autoclicker_a4asg2fXnT.png?raw=true) "Hotkey Change"](#)
+[![](/screenshots/v2.1.0/rusty-autoclicker_ClJzyc8yHz.png?raw=true "Setting Coordinates")](#)
   
 </div>
 
