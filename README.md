@@ -45,6 +45,13 @@ rustup update
 cargo run --release
 ```
 
+#### Linux crash fix
+
+```shell
+export WINIT_UNIX_BACKEND=x11
+./launch_your_app
+```
+
 ### Build
 
 ```shell
