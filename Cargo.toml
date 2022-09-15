@@ -28,6 +28,7 @@ persistence = ["eframe/persistence", "serde"] # Enable if you want to persist ap
 opt-level = 3 # all optimizations
 lto = true
 codegen-units = 1
+strip = true
 
 [patch.crates-io]
 
