@@ -58,3 +58,7 @@ export WINIT_UNIX_BACKEND=x11
 rustup update
 cargo build --release
 ```
+
+## Contributing
+
+Please follow the [CONTRIBUTING.md](CONTRIBUTING.md) guide.
