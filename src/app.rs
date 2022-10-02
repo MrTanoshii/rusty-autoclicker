@@ -12,7 +12,7 @@ use rdev::{simulate, Button, EventType, SimulateError};
 
 use eframe::{
     egui,
-    epaint::{FontFamily, FontId},
+    epaint::{FontFamily, FontId}, emath::Numeric,
 };
 
 use sanitizer::prelude::StringSanitizer;
@@ -71,6 +71,7 @@ pub struct RustyAutoClickerApp {
     is_setting_coord: bool,
     is_setting_autoclick_key: bool,
     is_setting_set_coord_key: bool,
+    is_moving_humanlike: bool,
 
     // App mode
     app_mode: AppMode,
@@ -122,6 +123,7 @@ impl Default for RustyAutoClickerApp {
             is_setting_coord: false,
             is_setting_autoclick_key: false,
             is_setting_set_coord_key: false,
+            is_moving_humanlike: true,
 
             // App mode
             app_mode: AppMode::Bot,
@@ -260,6 +262,7 @@ fn autoclick(
     click_coord: (f64, f64),
     click_type: ClickType,
     click_btn: Button,
+    is_moving_humanlike: bool,
     mut rng_thread: ThreadRng,
 ) {
     // Set the amount of runs/clicks required
@@ -295,13 +298,40 @@ fn autoclick(
                 ));
             }
 
-            // TODO: Implement non blocking smooth mouse movement (i.e. it should not mouse directly)
             // Move mouse to saved coordinates if requested
             if click_position == ClickPosition::Coord {
+                if is_moving_humanlike {
+                    // move to (0,0) so we know exactly how far we have to move from here
+                    send(&EventType::MouseMove {
+                        x: 0.0,
+                        y: 0.0
+                    });
+                    // TODO: make speed configurable, and move directly instead of first horizontally, then diagonally
+                    let delta_x: f64 = 10.0;
+                    //for n in 0..=(click_coord.0 / 10.0).to_int_unchecked() {
+                    for n in 0..=10 {
+                            send(&EventType::MouseMove {
+                            x: n.to_f64()*delta_x,
+                            y: 0.0
+                        });
+                        thread::sleep(Duration::from_millis(100));
+                    }
+                    let delta_y: f64 = 10.0;
+                    //for n in 0..=(click_coord.1 / 10.0).to_int_unchecked() {
+                    for n in 0..=10 {
+                            send(&EventType::MouseMove {
+                            x: click_coord.1,
+                            y: n.to_f64()*delta_y
+                        });
+                        thread::sleep(Duration::from_millis(100));
+                    }
+                
+                }
+                // move to final destination
                 send(&EventType::MouseMove {
-                    x: click_coord.0,
-                    y: click_coord.1,
-                })
+                      x: click_coord.0,
+                      y: click_coord.1,
+                });
             }
 
             send(&EventType::ButtonPress(click_btn));
@@ -434,6 +464,7 @@ impl eframe::App for RustyAutoClickerApp {
                 (click_x, click_y),
                 self.click_type,
                 self.click_btn,
+                self.is_moving_humanlike,
                 self.rng_thread.clone(),
             );
 
