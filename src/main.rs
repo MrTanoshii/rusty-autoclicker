@@ -10,13 +10,14 @@ mod icon;
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
+    
     let native_options = eframe::NativeOptions {
         always_on_top: true,
         decorated: true,
         initial_window_size: Some(egui::vec2(550f32, 309f32)),
         resizable: false,
         transparent: true,
-        icon_data: Some(icon::load_icon()),
+        icon_data: Some(icon::load_icon("assets/icon-64x64.ico")),
         ..Default::default()
     };
     eframe::run_native(
