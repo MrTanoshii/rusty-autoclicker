@@ -16,10 +16,11 @@ crate-type = ["cdylib", "rlib"]
 rand = "0.8"
 device_query = "1.1"
 eframe = "0.19" # Gives us egui, epi and web+native backends
+image = "0.24.2"
 rdev = "0.5"
 sanitizer = { version = "0.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
-image = "0.24.2"
+
 [features]
 default = []
 persistence = ["eframe/persistence", "serde"] # Enable if you want to persist app state on shutdown
