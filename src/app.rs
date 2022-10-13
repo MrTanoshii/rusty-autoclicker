@@ -669,6 +669,11 @@ impl eframe::App for RustyAutoClickerApp {
                                 .desired_width(40.0f32)
                                 .hint_text("0"),
                         );
+                        if self.is_autoclicking && click_amount > 0u64 {
+                            let remaining_clicks = click_amount.saturating_sub(self.click_counter);
+                            let remaining_text = format!("Remaining {:?}", remaining_clicks);
+                            ui.label(remaining_text);
+                        }
                     });
                 });
 
