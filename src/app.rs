@@ -192,6 +192,16 @@ impl RustyAutoClickerApp {
         frame.set_window_pos(self.window_position);
         self.is_setting_coord = false;
     }
+
+    fn start_autoclick(&mut self, negative_click_start_offset: u64) {
+        self.click_counter = 0u64;
+        self.is_autoclicking = !self.is_autoclicking;
+        self.rng_thread = thread_rng();
+
+        self.last_now = Instant::now()
+            .checked_sub(Duration::from_millis(negative_click_start_offset))
+            .unwrap();
+    }
 }
 
 // Provides sanitation for input string
@@ -361,28 +371,6 @@ impl eframe::App for RustyAutoClickerApp {
             click_y = self.click_y_str.parse().unwrap();
         }
 
-        // Toggle autoclicking
-        if self.key_autoclick.is_some() && keys.contains(&self.key_autoclick.unwrap()) {
-            self.key_pressed_autoclick = true;
-        } else if self.key_pressed_autoclick {
-            self.key_pressed_autoclick = false;
-            if self.is_autoclicking {
-                self.is_autoclicking = false;
-            } else {
-                // Set only if app is not busy
-                if !self.is_setting_autoclick_key
-                    && !self.is_setting_coord
-                    && !self.is_setting_set_coord_key
-                    && !self.hotkey_window_open
-                {
-                    self.click_counter = 0u64;
-                    self.is_autoclicking = true;
-                    self.rng_thread = thread_rng();
-                }
-                self.last_now = Instant::now();
-            }
-        }
-
         // Close hotkeys window if escape pressed & released
         if self.hotkey_window_open {
             if keys.contains(&Keycode::Escape) {
@@ -409,6 +397,24 @@ impl eframe::App for RustyAutoClickerApp {
         let interval: u64 = (hr * 3600000u64) + (min * 60000u64) + (sec * 1000u64) + ms;
 
         let update_now = Instant::now();
+
+        // Toggle autoclicking
+        if self.key_autoclick.is_some() && keys.contains(&self.key_autoclick.unwrap()) {
+            self.key_pressed_autoclick = true;
+        } else if self.key_pressed_autoclick {
+            self.key_pressed_autoclick = false;
+            if self.is_autoclicking {
+                self.is_autoclicking = false;
+            } else if !self.is_setting_autoclick_key
+                && !self.is_setting_coord
+                && !self.is_setting_set_coord_key
+                && !self.hotkey_window_open
+            {
+                // Set only if app is not busy
+                // Start autoclick, first click is instantaneous
+                Self::start_autoclick(self, interval);
+            }
+        }
 
         // Send click event
         if self.is_autoclicking
@@ -792,7 +798,8 @@ impl eframe::App for RustyAutoClickerApp {
                             .add_sized([120.0f32, 38.0f32], egui::widgets::Button::new(text))
                             .clicked()
                         {
-                            self.is_autoclicking = true
+                            // Start autoclick, first click is delayed
+                            Self::start_autoclick(self, 0u64);
                         }
                     }
                 });
