@@ -238,6 +238,14 @@ fn send(event_type: &EventType) {
     }
 }
 
+fn parse_string_to_u64(string: String) -> u64 {
+    let mut unsigned_int: u64 = 0u64;
+    if !string.is_empty() {
+        unsigned_int = string.parse().unwrap();
+    }
+    unsigned_int
+}
+
 fn autoclick(
     app_mode: AppMode,
     click_position: ClickPosition,
@@ -337,22 +345,10 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.click_y_str, 7usize);
 
         // Parse time Strings to u64
-        let mut hr: u64 = 0u64;
-        if !self.hr_str.is_empty() {
-            hr = self.hr_str.parse().unwrap();
-        }
-        let mut min: u64 = 0u64;
-        if !self.min_str.is_empty() {
-            min = self.min_str.parse().unwrap();
-        }
-        let mut sec: u64 = 0u64;
-        if !self.sec_str.is_empty() {
-            sec = self.sec_str.parse().unwrap();
-        }
-        let mut ms: u64 = 0u64;
-        if !self.ms_str.is_empty() {
-            ms = self.ms_str.parse().unwrap();
-        }
+        let hr: u64 = parse_string_to_u64(self.hr_str.clone());
+        let min: u64 = parse_string_to_u64(self.min_str.clone());
+        let sec: u64 = parse_string_to_u64(self.sec_str.clone());
+        let ms: u64 = parse_string_to_u64(self.ms_str.clone());
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse click amount String to u64
