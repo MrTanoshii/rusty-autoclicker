@@ -246,6 +246,14 @@ fn parse_string_to_u64(string: String) -> u64 {
     unsigned_int
 }
 
+fn parse_string_to_f64(string: String) -> f64 {
+    let mut float: f64 = 0f64;
+    if !string.is_empty() {
+        float = string.parse().unwrap();
+    }
+    float
+}
+
 fn autoclick(
     app_mode: AppMode,
     click_position: ClickPosition,
@@ -358,14 +366,8 @@ impl eframe::App for RustyAutoClickerApp {
         }
 
         // Parse mouse coordinates Strings to f64
-        let mut click_x: f64 = 0f64;
-        if !self.click_x_str.is_empty() {
-            click_x = self.click_x_str.parse().unwrap();
-        }
-        let mut click_y: f64 = 0f64;
-        if !self.click_y_str.is_empty() {
-            click_y = self.click_y_str.parse().unwrap();
-        }
+        let click_x: f64 = parse_string_to_f64(self.click_x_str.clone());
+        let click_y: f64 = parse_string_to_f64(self.click_y_str.clone());
 
         // Close hotkeys window if escape pressed & released
         if self.hotkey_window_open {
