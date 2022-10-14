@@ -360,10 +360,7 @@ impl eframe::App for RustyAutoClickerApp {
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse click amount String to u64
-        let mut click_amount: u64 = 0u64;
-        if !self.click_amount_str.is_empty() {
-            click_amount = self.click_amount_str.parse().unwrap();
-        }
+        let click_amount: u64 = parse_string_to_u64(self.click_amount_str.clone());
 
         // Parse mouse coordinates Strings to f64
         let click_x: f64 = parse_string_to_f64(self.click_x_str.clone());
