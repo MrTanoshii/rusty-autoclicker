@@ -206,6 +206,16 @@ impl RustyAutoClickerApp {
         frame.set_window_pos(self.window_position);
         self.is_setting_coord = false;
     }
+
+    fn start_autoclick(&mut self, negative_click_start_offset: u64) {
+        self.click_counter = 0u64;
+        self.is_autoclicking = !self.is_autoclicking;
+        self.rng_thread = thread_rng();
+
+        self.last_now = Instant::now()
+            .checked_sub(Duration::from_millis(negative_click_start_offset))
+            .unwrap();
+    }
 }
 
 // Provides sanitation for input string
@@ -240,6 +250,22 @@ fn send(event_type: &EventType) {
     if env::consts::OS == "macos" {
         thread::sleep(Duration::from_millis(20u64));
     }
+}
+
+fn parse_string_to_u64(string: String) -> u64 {
+    let mut unsigned_int: u64 = 0u64;
+    if !string.is_empty() {
+        unsigned_int = string.parse().unwrap();
+    }
+    unsigned_int
+}
+
+fn parse_string_to_f64(string: String) -> f64 {
+    let mut float: f64 = 0f64;
+    if !string.is_empty() {
+        float = string.parse().unwrap();
+    }
+    float
 }
 
 fn move_to(
@@ -399,51 +425,25 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.movement_ms_str, 5usize);
 
         // Parse time Strings to u64
-        let mut hr: u64 = 0u64;
-        if !self.hr_str.is_empty() {
-            hr = self.hr_str.parse().unwrap();
-        }
-        let mut min: u64 = 0u64;
-        if !self.min_str.is_empty() {
-            min = self.min_str.parse().unwrap();
-        }
-        let mut sec: u64 = 0u64;
-        if !self.sec_str.is_empty() {
-            sec = self.sec_str.parse().unwrap();
-        }
-        let mut ms: u64 = 0u64;
-        if !self.ms_str.is_empty() {
-            ms = self.ms_str.parse().unwrap();
-        }
-        println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
+        let hr: u64 = parse_string_to_u64(self.hr_str.clone());
+        let min: u64 = parse_string_to_u64(self.min_str.clone());
+        let sec: u64 = parse_string_to_u64(self.sec_str.clone());
+        let ms: u64 = parse_string_to_u64(self.ms_str.clone());
+        // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse movement Strings to u64
-        let mut movement_sec: u64 = 0u64;
-        if !self.movement_sec_str.is_empty() {
-            movement_sec = self.movement_sec_str.parse().unwrap();
-        }
-        let mut movement_ms: u64 = 0u64;
-        if !self.movement_ms_str.is_empty() {
-            movement_ms = self.movement_ms_str.parse().unwrap();
-        }
+        let movement_sec: u64 = parse_string_to_u64(self.movement_sec_str.clone());
+        let movement_ms: u64 = parse_string_to_u64(self.movement_ms_str.clone());
+        
         // Calculate movement delay
         let movement_delay_in_ms: u64 = (movement_sec * 1000u64) + movement_ms;
 
         // Parse click amount String to u64
-        let mut click_amount: u64 = 0u64;
-        if !self.click_amount_str.is_empty() {
-            click_amount = self.click_amount_str.parse().unwrap();
-        }
+        let click_amount: u64 = parse_string_to_u64(self.click_amount_str.clone());
 
         // Parse mouse coordinates Strings to f64
-        let mut click_x: f64 = 0f64;
-        if !self.click_x_str.is_empty() {
-            click_x = self.click_x_str.parse().unwrap();
-        }
-        let mut click_y: f64 = 0f64;
-        if !self.click_y_str.is_empty() {
-            click_y = self.click_y_str.parse().unwrap();
-        }
+        let click_x: f64 = parse_string_to_f64(self.click_x_str.clone());
+        let click_y: f64 = parse_string_to_f64(self.click_y_str.clone());
 
         // Toggle autoclicking
         if self.key_autoclick.is_some() && keys.contains(&self.key_autoclick.unwrap()) {
@@ -499,6 +499,24 @@ impl eframe::App for RustyAutoClickerApp {
         let interval: u64 = (hr * 3600000u64) + (min * 60000u64) + (sec * 1000u64) + ms;
 
         let update_now = Instant::now();
+
+        // Toggle autoclicking
+        if self.key_autoclick.is_some() && keys.contains(&self.key_autoclick.unwrap()) {
+            self.key_pressed_autoclick = true;
+        } else if self.key_pressed_autoclick {
+            self.key_pressed_autoclick = false;
+            if self.is_autoclicking {
+                self.is_autoclicking = false;
+            } else if !self.is_setting_autoclick_key
+                && !self.is_setting_coord
+                && !self.is_setting_set_coord_key
+                && !self.hotkey_window_open
+            {
+                // Set only if app is not busy
+                // Start autoclick, first click is instantaneous
+                Self::start_autoclick(self, interval);
+            }
+        }
 
         // move to target position
         if self.is_moving {
@@ -812,6 +830,11 @@ impl eframe::App for RustyAutoClickerApp {
                                 .desired_width(40.0f32)
                                 .hint_text("0"),
                         );
+                        if self.is_autoclicking && click_amount > 0u64 {
+                            let remaining_clicks = click_amount.saturating_sub(self.click_counter);
+                            let remaining_text = format!("Remaining {:?}", remaining_clicks);
+                            ui.label(remaining_text);
+                        }
                     });
                 });
 
@@ -881,13 +904,21 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.label(mouse_txt);
                 let key_txt = format!("Key pressed: {:?}", keys);
                 ui.label(key_txt);
+                let extra_buttons_pressed = mouse
+                    .button_pressed
+                    .iter()
+                    .enumerate()
+                    .skip(4)
+                    .map(|(button_number, pressed)| format!("{:?}-{:?}", button_number, pressed))
+                    .collect::<Vec<String>>()
+                    .join(" ");
+
                 ui.label(format!(
-                    "Mouse pressed: L-{:?} R-{:?} M-{:?} 4-{:?} 5-{:?}",
+                    "Mouse pressed: L-{:?} R-{:?} M-{:?} {}",
                     mouse.button_pressed[1],
                     mouse.button_pressed[2],
                     mouse.button_pressed[3],
-                    mouse.button_pressed[4],
-                    mouse.button_pressed[5]
+                    &extra_buttons_pressed
                 ));
 
                 ui.separator();
@@ -922,6 +953,8 @@ impl eframe::App for RustyAutoClickerApp {
                             .add_sized([120.0f32, 38.0f32], egui::widgets::Button::new(text))
                             .clicked()
                         {
+                            // Start autoclick, first click is delayed
+                            // Self::start_autoclick(self, 0u64);
                             self.is_executing = true
                         }
                     }
