@@ -1,9 +1,9 @@
 // #![allow(unused_imports)]
+use rand::{prelude::ThreadRng, thread_rng, Rng};
 use std::{
     env, str, thread,
     time::{Duration, Instant},
 };
-use rand::{prelude::ThreadRng, thread_rng, Rng};
 
 use std::f64;
 

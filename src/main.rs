@@ -6,6 +6,7 @@
 use eframe::egui;
 
 mod constants;
+mod icon;
 use crate::constants::*;
 
 // When compiling natively:
