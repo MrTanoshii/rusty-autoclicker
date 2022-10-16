@@ -1,9 +1,9 @@
 // #![allow(unused_imports)]
+use rand::{prelude::ThreadRng, thread_rng, Rng};
 use std::{
     env, str, thread,
     time::{Duration, Instant},
 };
-use rand::{prelude::ThreadRng, thread_rng, Rng};
 
 use std::f64;
 
@@ -13,7 +13,8 @@ use rdev::{simulate, Button, EventType, SimulateError};
 
 use eframe::{
     egui,
-    epaint::{FontFamily, FontId}, emath::Numeric,
+    emath::Numeric,
+    epaint::{FontFamily, FontId},
 };
 
 use sanitizer::prelude::StringSanitizer;
@@ -135,7 +136,7 @@ impl Default for RustyAutoClickerApp {
             is_setting_autoclick_key: false,
             is_setting_set_coord_key: false,
             is_moving_humanlike: true,
-            
+
             // App mode
             app_mode: AppMode::Bot,
 
@@ -253,44 +254,45 @@ fn move_to(
     if app_mode == AppMode::Humanlike {
         // Move mouse slowly to saved coordinates if requested
         if click_position == ClickPosition::Coord && is_moving_humanlike {
-               let mut current_x = start_coords.0;
-               let mut current_y = start_coords.1;
-               for _n in 0..=5 {
-                    // horizontal movement: determine whether we need to move left, right or not at all
-                    let delta_x: f64 = if current_x < click_coord.0 { 10.0f64.min(click_coord.0 - current_x) }
-                    else if current_x > click_coord.0 { -10.0f64.max(click_coord.0 - current_x) }
-                    else { 0.0 };
- 
-                    // vertical movement: determine whether we need to move up, down or not at all
-                    let delta_y: f64 = if current_y < click_coord.1 { 10.0f64.min(click_coord.1 - current_y) }
-                    else if current_y > click_coord.1 { -10.0f64.max(click_coord.1 - current_y) }
-                    else { 0.0 };
+            let mut current_x = start_coords.0;
+            let mut current_y = start_coords.1;
+            for _n in 0..=5 {
+                // horizontal movement: determine whether we need to move left, right or not at all
+                let delta_x: f64 = if current_x < click_coord.0 {
+                    10.0f64.min(click_coord.0 - current_x)
+                } else if current_x > click_coord.0 {
+                    -10.0f64.max(click_coord.0 - current_x)
+                } else {
+                    0.0
+                };
 
-                    current_x += delta_x;
-                    current_y += delta_y;
-                    
-                    #[cfg(debug_assertions)]
-                    println!(
-                        "Moving by {:?} / {:?}, new pos: {:?} / {:?}",
-                        delta_x,
-                        delta_y,
-                        current_x,
-                        current_y
-                    );
-                    send(&EventType::MouseMove {
-                       x: current_x,
-                       y: current_y
-                    });
-                    
-                    thread::sleep(Duration::from_millis(movement_delay_in_ms));                    
-               }
-                
-           }
+                // vertical movement: determine whether we need to move up, down or not at all
+                let delta_y: f64 = if current_y < click_coord.1 {
+                    10.0f64.min(click_coord.1 - current_y)
+                } else if current_y > click_coord.1 {
+                    -10.0f64.max(click_coord.1 - current_y)
+                } else {
+                    0.0
+                };
+
+                current_x += delta_x;
+                current_y += delta_y;
+
+                #[cfg(debug_assertions)]
+                println!(
+                    "Moving by {:?} / {:?}, new pos: {:?} / {:?}",
+                    delta_x, delta_y, current_x, current_y
+                );
+                send(&EventType::MouseMove {
+                    x: current_x,
+                    y: current_y,
+                });
+
+                thread::sleep(Duration::from_millis(movement_delay_in_ms));
+            }
         }
-        
-
+    }
 }
-
 
 fn autoclick(
     app_mode: AppMode,
@@ -340,8 +342,8 @@ fn autoclick(
             if click_position == ClickPosition::Coord {
                 // move to final destination
                 send(&EventType::MouseMove {
-                      x: click_coord.0,
-                      y: click_coord.1,
+                    x: click_coord.0,
+                    y: click_coord.1,
                 });
             }
 
@@ -377,7 +379,7 @@ impl eframe::App for RustyAutoClickerApp {
                 .checked_duration_since(self.frame_start)
                 .unwrap()
         );
-        
+
         self.frame_start = Instant::now();
 
         // Get mouse & keyboard states
@@ -395,7 +397,6 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.click_y_str, 7usize);
         sanitize_string(&mut self.movement_sec_str, 5usize);
         sanitize_string(&mut self.movement_ms_str, 5usize);
-        
 
         // Parse time Strings to u64
         let mut hr: u64 = 0u64;
@@ -427,7 +428,6 @@ impl eframe::App for RustyAutoClickerApp {
         }
         // Calculate movement delay
         let movement_delay_in_ms: u64 = (movement_sec * 1000u64) + movement_ms;
-
 
         // Parse click amount String to u64
         let mut click_amount: u64 = 0u64;
@@ -501,14 +501,13 @@ impl eframe::App for RustyAutoClickerApp {
         let update_now = Instant::now();
 
         // move to target position
-        if self.is_moving 
-        {
+        if self.is_moving {
             #[cfg(debug_assertions)]
             println!(
                 "Moving from {:?}/{:?} towards: {:?}/{:?}",
                 mouse.coords.0.to_f64(),
                 mouse.coords.1.to_f64(),
-                click_x, 
+                click_x,
                 click_y
             );
             move_to(
@@ -516,21 +515,16 @@ impl eframe::App for RustyAutoClickerApp {
                 self.click_position,
                 (click_x, click_y),
                 self.is_moving_humanlike,
-                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()), 
+                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()),
                 movement_delay_in_ms,
                 self.rng_thread.clone(),
             );
             if mouse.coords.0.to_f64() == click_x && mouse.coords.1.to_f64() == click_y {
                 #[cfg(debug_assertions)]
-                println!(
-                    "Reached destination: {:?}",
-                    mouse.coords
-                );
+                println!("Reached destination: {:?}", mouse.coords);
                 self.is_moving = false;
                 self.is_autoclicking = true;
             };
-           
-
         }
 
         // Send click event
@@ -557,7 +551,7 @@ impl eframe::App for RustyAutoClickerApp {
                 self.click_type,
                 self.click_btn,
                 self.is_moving_humanlike,
-                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()), 
+                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()),
                 self.rng_thread.clone(),
             );
 
