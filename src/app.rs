@@ -3,7 +3,6 @@ use std::{
     env, str, thread,
     time::{Duration, Instant},
 };
-
 use rand::{prelude::ThreadRng, thread_rng, Rng};
 
 use std::f64;
@@ -18,6 +17,8 @@ use eframe::{
 };
 
 use sanitizer::prelude::StringSanitizer;
+
+use crate::constants::*;
 
 #[derive(PartialEq, Debug, Copy, Clone)]
 enum ClickType {
@@ -200,7 +201,7 @@ impl RustyAutoClickerApp {
 
     fn exit_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
         frame.set_decorations(true);
-        frame.set_window_size(egui::vec2(550f32, 309f32));
+        frame.set_window_size(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
         frame.set_window_pos(self.window_position);
         self.is_setting_coord = false;
     }
@@ -742,6 +743,30 @@ impl eframe::App for RustyAutoClickerApp {
                                 .hint_text("0"),
                         );
                     });
+                });
+                ui.separator();
+                ui.label("Movement delay");
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                    ui.label("ms");
+                    if self.is_executing || self.hotkey_window_open {
+                        ui.set_enabled(false);
+                    };
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.movement_ms_str)
+                            .desired_width(40.0f32)
+                            .hint_text("20"),
+                    );
+
+                    ui.label("sec");
+                    if self.is_executing || self.hotkey_window_open {
+                        ui.set_enabled(false);
+                    };
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.movement_sec_str)
+                            .desired_width(40.0f32)
+                            .hint_text("0"),
+                    );
                 });
 
                 ui.separator();
