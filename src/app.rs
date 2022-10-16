@@ -113,7 +113,7 @@ impl Default for RustyAutoClickerApp {
             click_x_str: "0".to_owned(),
             click_y_str: "0".to_owned(),
             movement_sec_str: "0".to_owned(),
-            movement_ms_str: "0".to_owned(),
+            movement_ms_str: "20".to_owned(),
 
             // Time
             last_now: Instant::now(),
@@ -244,10 +244,9 @@ fn move_to(
     app_mode: AppMode,
     click_position: ClickPosition,
     click_coord: (f64, f64),
-    click_type: ClickType,
-    click_btn: Button,
     is_moving_humanlike: bool,
     start_coords: (f64, f64),
+    movement_delay_in_ms: u64,
     mut rng_thread: ThreadRng,
 ) {
     if app_mode == AppMode::Humanlike {
@@ -255,18 +254,17 @@ fn move_to(
         if click_position == ClickPosition::Coord && is_moving_humanlike {
                let mut current_x = start_coords.0;
                let mut current_y = start_coords.1;
-               //for n in 0..=(click_coord.0 / 10.0).to_int_unchecked() {
-               for n in 0..=5 {
-                     let delta_x: f64 = if current_x < click_coord.0 { 10.0f64.min(click_coord.0 - current_x) }
+               for _n in 0..=5 {
+                    // horizontal movement: determine whether we need to move left, right or not at all
+                    let delta_x: f64 = if current_x < click_coord.0 { 10.0f64.min(click_coord.0 - current_x) }
                     else if current_x > click_coord.0 { -10.0f64.max(click_coord.0 - current_x) }
                     else { 0.0 };
  
+                    // vertical movement: determine whether we need to move up, down or not at all
                     let delta_y: f64 = if current_y < click_coord.1 { 10.0f64.min(click_coord.1 - current_y) }
                     else if current_y > click_coord.1 { -10.0f64.max(click_coord.1 - current_y) }
                     else { 0.0 };
 
-                    //let delta_x: f64 = 10.0;
-                    //let delta_y: f64 = 10.0;
                     current_x += delta_x;
                     current_y += delta_y;
                     
@@ -283,8 +281,7 @@ fn move_to(
                        y: current_y
                     });
                     
-                    
-                    thread::sleep(Duration::from_millis(20));                    
+                    thread::sleep(Duration::from_millis(movement_delay_in_ms));                    
                }
                 
            }
@@ -372,14 +369,14 @@ impl eframe::App for RustyAutoClickerApp {
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         // Print time to between start of old and new frames
-        /*#[cfg(debug_assertions)]
+        #[cfg(debug_assertions)]
         println!(
             "Frame delta: {:?}",
             Instant::now()
                 .checked_duration_since(self.frame_start)
                 .unwrap()
         );
-        */
+        
         self.frame_start = Instant::now();
 
         // Get mouse & keyboard states
@@ -416,7 +413,7 @@ impl eframe::App for RustyAutoClickerApp {
         if !self.ms_str.is_empty() {
             ms = self.ms_str.parse().unwrap();
         }
-        // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
+        println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse movement Strings to u64
         let mut movement_sec: u64 = 0u64;
@@ -517,10 +514,9 @@ impl eframe::App for RustyAutoClickerApp {
                 self.app_mode,
                 self.click_position,
                 (click_x, click_y),
-                self.click_type,
-                self.click_btn,
                 self.is_moving_humanlike,
                 (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()), 
+                movement_delay_in_ms,
                 self.rng_thread.clone(),
             );
             if mouse.coords.0.to_f64() == click_x && mouse.coords.1.to_f64() == click_y {
@@ -648,7 +644,6 @@ impl eframe::App for RustyAutoClickerApp {
             });
             Self::follow_cursor(self, frame);
         } else {
-            //println!("window position: {:?}", frame.info().window_info.position.unwrap());
             // GUI
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
                 // The top panel is often a good place for a menu bar:
@@ -1008,12 +1003,12 @@ impl eframe::App for RustyAutoClickerApp {
         ctx.request_repaint();
 
         // Print time to process frame
-        /*#[cfg(debug_assertions)]
+        #[cfg(debug_assertions)]
         println!(
             "Frame time: {:?}",
             Instant::now()
                 .checked_duration_since(self.frame_start)
                 .unwrap()
-        );*/
+        );
     }
 }
