@@ -35,6 +35,24 @@ enum AppMode {
     Humanlike,
 }
 
+enum AppState {
+    Init,
+    SettingCoordinates,
+    SettingAutoclickKey,
+    SettingCoordinatesKey,
+    MoveTo,
+    AutoClick
+}
+
+/*
+  is_autoclicking: bool,
+    is_setting_coord: bool,
+    is_setting_autoclick_key: bool,
+    is_setting_set_coord_key: bool,
+    is_moving_humanlike: bool,
+    is_moving: bool,
+ */
+
 const DURATION_CLICK_MIN: u64 = 20;
 const DURATION_CLICK_MAX: u64 = 40;
 const DURATION_DOUBLE_CLICK_MIN: u64 = 30;
@@ -54,6 +72,8 @@ pub struct RustyAutoClickerApp {
     click_amount_str: String,
     click_x_str: String,
     click_y_str: String,
+    movement_sec_str: String,
+    movement_ms_str: String,
 
     // Time
     last_now: Instant,
@@ -72,6 +92,9 @@ pub struct RustyAutoClickerApp {
     is_setting_autoclick_key: bool,
     is_setting_set_coord_key: bool,
     is_moving_humanlike: bool,
+    is_moving: bool,
+
+    app_state: AppState,
 
     // App mode
     app_mode: AppMode,
@@ -106,6 +129,8 @@ impl Default for RustyAutoClickerApp {
             click_amount_str: "0".to_owned(),
             click_x_str: "0".to_owned(),
             click_y_str: "0".to_owned(),
+            movement_sec_str: "0".to_owned(),
+            movement_ms_str: "0".to_owned(),
 
             // Time
             last_now: Instant::now(),
@@ -124,6 +149,9 @@ impl Default for RustyAutoClickerApp {
             is_setting_autoclick_key: false,
             is_setting_set_coord_key: false,
             is_moving_humanlike: true,
+
+            is_moving: false,
+            app_state: AppState::Init,
 
             // App mode
             app_mode: AppMode::Bot,
@@ -173,6 +201,7 @@ impl RustyAutoClickerApp {
 
     fn enter_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
         self.is_setting_coord = true;
+        self.app_state = AppState::SettingCoordinates;
         self.window_position = frame.info().window_info.position.unwrap();
         frame.set_window_size(egui::vec2(400f32, 30f32));
         frame.set_decorations(false);
@@ -193,6 +222,7 @@ impl RustyAutoClickerApp {
         frame.set_window_size(egui::vec2(550f32, 309f32));
         frame.set_window_pos(self.window_position);
         self.is_setting_coord = false;
+        self.app_state = AppState::Init;
     }
 }
 
@@ -230,6 +260,48 @@ fn send(event_type: &EventType) {
     }
 }
 
+fn move_to(
+    app_mode: AppMode,
+    click_position: ClickPosition,
+    click_coord: (f64, f64),
+    click_type: ClickType,
+    click_btn: Button,
+    is_moving_humanlike: bool,
+    mouse_coords: (f64, f64),
+    mut rng_thread: ThreadRng,
+) {
+    if app_mode == AppMode::Humanlike {
+        // Move mouse slowly to saved coordinates if requested
+        if click_position == ClickPosition::Coord && is_moving_humanlike {
+               let start_x = mouse_coords.0;
+               let start_y = mouse_coords.1;
+               // TODO: make speed configurable, and move directly instead of first horizontally, then diagonally
+               let delta_x: f64 = 10.0;
+               //for n in 0..=(click_coord.0 / 10.0).to_int_unchecked() {
+               for n in 0..=10 {
+                       send(&EventType::MouseMove {
+                       x: n.to_f64()*delta_x,
+                       y: 0.0
+                   });
+                   thread::sleep(Duration::from_millis(100));
+               }
+               let delta_y: f64 = 10.0;
+               //for n in 0..=(click_coord.1 / 10.0).to_int_unchecked() {
+               for n in 0..=10 {
+                       send(&EventType::MouseMove {
+                       x: click_coord.1,
+                       y: n.to_f64()*delta_y
+                   });
+                   thread::sleep(Duration::from_millis(100));
+               }
+           
+           }
+        }
+        
+
+}
+
+
 fn autoclick(
     app_mode: AppMode,
     click_position: ClickPosition,
@@ -237,6 +309,7 @@ fn autoclick(
     click_type: ClickType,
     click_btn: Button,
     is_moving_humanlike: bool,
+    mouse_coords: (f64, f64),
     mut rng_thread: ThreadRng,
 ) {
     // Set the amount of runs/clicks required
@@ -264,6 +337,7 @@ fn autoclick(
         }
     // Autoclick to emulate a humanlike clicks
     } else if app_mode == AppMode::Humanlike {
+        // perform clicks
         for n in 1..=run_amount {
             // Sleep between clicks
             if n % 2 == 0 {
@@ -274,33 +348,6 @@ fn autoclick(
 
             // Move mouse to saved coordinates if requested
             if click_position == ClickPosition::Coord {
-                if is_moving_humanlike {
-                    // move to (0,0) so we know exactly how far we have to move from here
-                    send(&EventType::MouseMove {
-                        x: 0.0,
-                        y: 0.0
-                    });
-                    // TODO: make speed configurable, and move directly instead of first horizontally, then diagonally
-                    let delta_x: f64 = 10.0;
-                    //for n in 0..=(click_coord.0 / 10.0).to_int_unchecked() {
-                    for n in 0..=10 {
-                            send(&EventType::MouseMove {
-                            x: n.to_f64()*delta_x,
-                            y: 0.0
-                        });
-                        thread::sleep(Duration::from_millis(100));
-                    }
-                    let delta_y: f64 = 10.0;
-                    //for n in 0..=(click_coord.1 / 10.0).to_int_unchecked() {
-                    for n in 0..=10 {
-                            send(&EventType::MouseMove {
-                            x: click_coord.1,
-                            y: n.to_f64()*delta_y
-                        });
-                        thread::sleep(Duration::from_millis(100));
-                    }
-                
-                }
                 // move to final destination
                 send(&EventType::MouseMove {
                       x: click_coord.0,
@@ -355,6 +402,9 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.click_amount_str, 5usize);
         sanitize_string(&mut self.click_x_str, 7usize);
         sanitize_string(&mut self.click_y_str, 7usize);
+        sanitize_string(&mut self.movement_sec_str, 5usize);
+        sanitize_string(&mut self.movement_ms_str, 5usize);
+        
 
         // Parse time Strings to u64
         let mut hr: u64 = 0u64;
@@ -374,6 +424,19 @@ impl eframe::App for RustyAutoClickerApp {
             ms = self.ms_str.parse().unwrap();
         }
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
+
+        // Parse movement Strings to u64
+        let mut movement_sec: u64 = 0u64;
+        if !self.movement_sec_str.is_empty() {
+            movement_sec = self.movement_sec_str.parse().unwrap();
+        }
+        let mut movement_ms: u64 = 0u64;
+        if !self.movement_ms_str.is_empty() {
+            movement_ms = self.movement_ms_str.parse().unwrap();
+        }
+        // Calculate movement delay
+        let movement_delay_in_ms: u64 = (movement_sec * 1000u64) + movement_ms;
+
 
         // Parse click amount String to u64
         let mut click_amount: u64 = 0u64;
@@ -440,6 +503,22 @@ impl eframe::App for RustyAutoClickerApp {
 
         let update_now = Instant::now();
 
+        // move to target position
+        if self.is_moving 
+        {
+            move_to(
+                self.app_mode,
+                self.click_position,
+                (click_x, click_y),
+                self.click_type,
+                self.click_btn,
+                self.is_moving_humanlike,
+                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()), 
+                self.rng_thread.clone(),
+            );
+
+        }
+
         // Send click event
         if self.is_autoclicking
             && update_now
@@ -464,6 +543,7 @@ impl eframe::App for RustyAutoClickerApp {
                 self.click_type,
                 self.click_btn,
                 self.is_moving_humanlike,
+                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()), 
                 self.rng_thread.clone(),
             );
 
