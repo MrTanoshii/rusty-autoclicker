@@ -5,8 +5,6 @@ use std::{
     time::{Duration, Instant},
 };
 
-use std::f64;
-
 use device_query::{DeviceQuery, DeviceState, Keycode, MouseState};
 
 use rdev::{simulate, Button, EventType, SimulateError};
@@ -275,7 +273,6 @@ fn move_to(
     is_moving_humanlike: bool,
     start_coords: (f64, f64),
     movement_delay_in_ms: u64,
-    mut rng_thread: ThreadRng,
 ) {
     if app_mode == AppMode::Humanlike {
         // Move mouse slowly to saved coordinates if requested
@@ -285,18 +282,18 @@ fn move_to(
             for _n in 0..=5 {
                 // horizontal movement: determine whether we need to move left, right or not at all
                 let delta_x: f64 = if current_x < click_coord.0 {
-                    10.0f64.min(click_coord.0 - current_x)
+                    MOUSE_STEP_POS_X.min(click_coord.0 - current_x)
                 } else if current_x > click_coord.0 {
-                    -10.0f64.max(click_coord.0 - current_x)
+                    MOUSE_STEP_NEG_X.max(click_coord.0 - current_x)
                 } else {
                     0.0
                 };
 
                 // vertical movement: determine whether we need to move up, down or not at all
                 let delta_y: f64 = if current_y < click_coord.1 {
-                    10.0f64.min(click_coord.1 - current_y)
+                    MOUSE_STEP_POS_Y.min(click_coord.1 - current_y)
                 } else if current_y > click_coord.1 {
-                    -10.0f64.max(click_coord.1 - current_y)
+                    MOUSE_STEP_NEG_Y.max(click_coord.1 - current_y)
                 } else {
                     0.0
                 };
@@ -325,9 +322,7 @@ fn autoclick(
     click_position: ClickPosition,
     click_coord: (f64, f64),
     click_type: ClickType,
-    click_btn: Button,
-    is_moving_humanlike: bool,
-    mouse_coords: (f64, f64),
+    click_btn: Button,    
     mut rng_thread: ThreadRng,
 ) {
     // Set the amount of runs/clicks required
@@ -434,7 +429,7 @@ impl eframe::App for RustyAutoClickerApp {
         // Parse movement Strings to u64
         let movement_sec: u64 = parse_string_to_u64(self.movement_sec_str.clone());
         let movement_ms: u64 = parse_string_to_u64(self.movement_ms_str.clone());
-        
+
         // Calculate movement delay
         let movement_delay_in_ms: u64 = (movement_sec * 1000u64) + movement_ms;
 
@@ -535,7 +530,6 @@ impl eframe::App for RustyAutoClickerApp {
                 self.is_moving_humanlike,
                 (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()),
                 movement_delay_in_ms,
-                self.rng_thread.clone(),
             );
             if mouse.coords.0.to_f64() == click_x && mouse.coords.1.to_f64() == click_y {
                 #[cfg(debug_assertions)]
@@ -568,8 +562,6 @@ impl eframe::App for RustyAutoClickerApp {
                 (click_x, click_y),
                 self.click_type,
                 self.click_btn,
-                self.is_moving_humanlike,
-                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()),
                 self.rng_thread.clone(),
             );
 
