@@ -73,18 +73,16 @@ pub struct RustyAutoClickerApp {
     // Counter
     click_counter: u64,
 
-    //Hotkeys
+    // Hotkeys
     key_autoclick: Option<Keycode>,
     key_set_coord: Option<Keycode>,
 
     // App state
-    is_executing: bool,
     is_autoclicking: bool,
     is_setting_coord: bool,
     is_setting_autoclick_key: bool,
     is_setting_set_coord_key: bool,
     is_moving_humanlike: bool,
-    is_moving: bool,
 
     // App mode
     app_mode: AppMode,
@@ -134,9 +132,7 @@ impl Default for RustyAutoClickerApp {
             key_set_coord: Some(Keycode::Escape),
 
             // App state
-            is_executing: false,
             is_autoclicking: false,
-            is_moving: false,
             is_setting_coord: false,
             is_setting_autoclick_key: false,
             is_setting_set_coord_key: false,
@@ -286,7 +282,7 @@ fn move_to(
         if click_position == ClickPosition::Coord && is_moving_humanlike {
             let mut current_x = start_coords.0;
             let mut current_y = start_coords.1;
-            for _n in 0..=5 {
+            loop {
                 // horizontal movement: determine whether we need to move left, right or not at all
                 let delta_x: f64 = if current_x < click_coord.0 {
                     MOUSE_STEP_POS_X.min(click_coord.0 - current_x)
@@ -319,6 +315,9 @@ fn move_to(
                 });
 
                 thread::sleep(Duration::from_millis(movement_delay_in_ms));
+                if current_x == click_coord.0 && current_y == click_coord.1 {
+                    return;
+                }
             }
         }
     }
@@ -330,6 +329,9 @@ fn autoclick(
     click_coord: (f64, f64),
     click_type: ClickType,
     click_btn: Button,
+    mouse_coord: (i32, i32),
+    is_moving_humanlike: bool,
+    movement_delay_in_ms: u64,
     mut rng_thread: ThreadRng,
 ) {
     // Set the amount of runs/clicks required
@@ -357,6 +359,26 @@ fn autoclick(
         }
     // Autoclick to emulate a humanlike clicks
     } else if app_mode == AppMode::Humanlike {
+        let click_x = click_coord.0;
+        let click_y: f64 = click_coord.1;
+        // move to target
+        #[cfg(debug_assertions)]
+        println!(
+            "Moving from {:?}/{:?} towards: {:?}/{:?}",
+            mouse_coord.0.to_f64(),
+            mouse_coord.1.to_f64(),
+            click_x,
+            click_y
+        );
+        move_to(
+            app_mode,
+            click_position,
+            (click_x, click_y),
+            is_moving_humanlike,
+            (mouse_coord.0.to_f64(), mouse_coord.1.to_f64()),
+            movement_delay_in_ms,
+        );
+
         // perform clicks
         for n in 1..=run_amount {
             // Sleep between clicks
@@ -452,9 +474,7 @@ impl eframe::App for RustyAutoClickerApp {
             self.key_pressed_autoclick = true;
         } else if self.key_pressed_autoclick {
             self.key_pressed_autoclick = false;
-            if self.is_executing {
-                self.is_executing = false;
-                self.is_moving = false;
+            if self.is_autoclicking {
                 self.is_autoclicking = false;
             } else {
                 // Set only if app is not busy
@@ -464,7 +484,7 @@ impl eframe::App for RustyAutoClickerApp {
                     && !self.hotkey_window_open
                 {
                     self.click_counter = 0u64;
-                    self.is_executing = true;
+                    self.is_autoclicking = true;
                     self.rng_thread = thread_rng();
                 }
                 self.last_now = Instant::now();
@@ -477,7 +497,7 @@ impl eframe::App for RustyAutoClickerApp {
                 self.key_pressed_esc = true;
             } else if self.key_pressed_esc {
                 // Close only if app is not busy
-                if !self.is_executing
+                if !self.is_autoclicking
                     && !self.is_setting_autoclick_key
                     && !self.is_setting_coord
                     && !self.is_setting_set_coord_key
@@ -493,10 +513,6 @@ impl eframe::App for RustyAutoClickerApp {
         // } else if self.coord_window_open {
         // }
 
-        // did we enter execution mode? If yes, start moving
-        if self.is_executing && !self.is_moving && !self.is_autoclicking {
-            self.is_moving = true;
-        }
         // Calculate click interval
         let interval: u64 = (hr * 3600000u64) + (min * 60000u64) + (sec * 1000u64) + ms;
 
@@ -518,32 +534,6 @@ impl eframe::App for RustyAutoClickerApp {
                 // Start autoclick, first click is instantaneous
                 Self::start_autoclick(self, interval);
             }
-        }
-
-        // move to target position
-        if self.is_moving {
-            #[cfg(debug_assertions)]
-            println!(
-                "Moving from {:?}/{:?} towards: {:?}/{:?}",
-                mouse.coords.0.to_f64(),
-                mouse.coords.1.to_f64(),
-                click_x,
-                click_y
-            );
-            move_to(
-                self.app_mode,
-                self.click_position,
-                (click_x, click_y),
-                self.is_moving_humanlike,
-                (mouse.coords.0.to_f64(), mouse.coords.1.to_f64()),
-                movement_delay_in_ms,
-            );
-            if mouse.coords.0.to_f64() == click_x && mouse.coords.1.to_f64() == click_y {
-                #[cfg(debug_assertions)]
-                println!("Reached destination: {:?}", mouse.coords);
-                self.is_moving = false;
-                self.is_autoclicking = true;
-            };
         }
 
         // Send click event
@@ -569,6 +559,9 @@ impl eframe::App for RustyAutoClickerApp {
                 (click_x, click_y),
                 self.click_type,
                 self.click_btn,
+                mouse.coords,
+                self.is_moving_humanlike,
+                movement_delay_in_ms,
                 self.rng_thread.clone(),
             );
 
@@ -576,7 +569,6 @@ impl eframe::App for RustyAutoClickerApp {
             self.click_counter += 1u64;
             if click_amount != 0u64 && self.click_counter >= click_amount {
                 self.is_autoclicking = false;
-                self.is_executing = false;
             }
         }
         // Set hotkey for autoclick
@@ -627,7 +619,7 @@ impl eframe::App for RustyAutoClickerApp {
                 egui::menu::bar(ui, |ui| {
                     ui.horizontal_wrapped(|ui| {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                            if self.is_executing || self.hotkey_window_open {
+                            if self.is_autoclicking || self.hotkey_window_open {
                                 ui.set_enabled(false);
                             };
                             ui.add(
@@ -636,7 +628,7 @@ impl eframe::App for RustyAutoClickerApp {
                                     .hint_text("0"),
                             );
                             ui.label("Y");
-                            if self.is_executing || self.hotkey_window_open {
+                            if self.is_autoclicking || self.hotkey_window_open {
                                 ui.set_enabled(false);
                             };
                             ui.add(
@@ -660,12 +652,12 @@ impl eframe::App for RustyAutoClickerApp {
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
                 // The top panel is often a good place for a menu bar:
                 egui::menu::bar(ui, |ui| {
-                    if self.is_executing {
+                    if self.is_autoclicking {
                         if ui
                             .button(format!("🖱 STOP ({})", self.key_autoclick.unwrap()))
                             .clicked()
                         {
-                            self.is_executing = false;
+                            self.is_autoclicking = false;
                         };
                     } else {
                         if self.hotkey_window_open {
@@ -677,7 +669,7 @@ impl eframe::App for RustyAutoClickerApp {
                             format!("🖱 START ({})", self.key_autoclick.unwrap())
                         };
                         if ui.button(text).clicked() {
-                            self.is_executing = true
+                            self.is_autoclicking = true
                         }
                     }
 
@@ -685,7 +677,7 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.label("Settings: ");
 
                     if ui
-                        .add_enabled(!self.is_executing, egui::Button::new("⌨ Hotkeys"))
+                        .add_enabled(!self.is_autoclicking, egui::Button::new("⌨ Hotkeys"))
                         .clicked()
                     {
                         self.hotkey_window_open = true
@@ -694,12 +686,12 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.separator();
                     ui.label("App Mode: ");
 
-                    if self.is_executing || self.hotkey_window_open {
+                    if self.is_autoclicking || self.hotkey_window_open {
                         ui.set_enabled(false);
                     };
                     ui.selectable_value(&mut self.app_mode, AppMode::Bot, "🖥 Bot")
                         .on_hover_text("Autoclick as fast as possible");
-                    if self.is_executing || self.hotkey_window_open {
+                    if self.is_autoclicking || self.hotkey_window_open {
                         ui.set_enabled(false);
                     };
                     ui.selectable_value(&mut self.app_mode, AppMode::Humanlike, "😆 Humanlike")
@@ -715,7 +707,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.label("ms");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.add(
@@ -725,7 +717,7 @@ impl eframe::App for RustyAutoClickerApp {
                         );
 
                         ui.label("sec");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.add(
@@ -735,7 +727,7 @@ impl eframe::App for RustyAutoClickerApp {
                         );
 
                         ui.label("min");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.add(
@@ -745,7 +737,7 @@ impl eframe::App for RustyAutoClickerApp {
                         );
 
                         ui.label("hr");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.add(
@@ -760,7 +752,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                     ui.label("ms");
-                    if self.is_executing || self.hotkey_window_open {
+                    if self.is_autoclicking || self.hotkey_window_open {
                         ui.set_enabled(false);
                     };
                     ui.add(
@@ -770,7 +762,7 @@ impl eframe::App for RustyAutoClickerApp {
                     );
 
                     ui.label("sec");
-                    if self.is_executing || self.hotkey_window_open {
+                    if self.is_autoclicking || self.hotkey_window_open {
                         ui.set_enabled(false);
                     };
                     ui.add(
@@ -785,15 +777,15 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Mouse Button");
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.selectable_value(&mut self.click_btn, Button::Right, "Right");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.selectable_value(&mut self.click_btn, Button::Middle, "Middle");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.selectable_value(&mut self.click_btn, Button::Left, "Left");
@@ -805,11 +797,11 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Click Type");
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.selectable_value(&mut self.click_type, ClickType::Double, "Double");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.selectable_value(&mut self.click_type, ClickType::Single, "Single");
@@ -821,7 +813,7 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Click Amount (0 = forever)");
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.add(
@@ -841,7 +833,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Click Position");
-                    if self.is_executing || self.hotkey_window_open {
+                    if self.is_autoclicking || self.hotkey_window_open {
                         ui.set_enabled(false);
                     };
                     if ui
@@ -851,7 +843,7 @@ impl eframe::App for RustyAutoClickerApp {
                         Self::enter_coordinate_setting(self, frame);
                     };
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.add(
@@ -860,7 +852,7 @@ impl eframe::App for RustyAutoClickerApp {
                                 .hint_text("0"),
                         );
                         ui.label("Y");
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         ui.add(
@@ -870,7 +862,7 @@ impl eframe::App for RustyAutoClickerApp {
                         );
                         ui.label("X");
 
-                        if self.is_executing || self.hotkey_window_open {
+                        if self.is_autoclicking || self.hotkey_window_open {
                             ui.set_enabled(false);
                         };
                         if ui
@@ -923,7 +915,7 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.separator();
 
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                    if self.is_executing {
+                    if self.is_autoclicking {
                         if self.hotkey_window_open {
                             ui.set_enabled(false);
                         }
@@ -937,7 +929,7 @@ impl eframe::App for RustyAutoClickerApp {
                             )
                             .clicked()
                         {
-                            self.is_executing = false;
+                            self.is_autoclicking = false;
                         };
                     } else {
                         if self.hotkey_window_open {
@@ -954,7 +946,7 @@ impl eframe::App for RustyAutoClickerApp {
                         {
                             // Start autoclick, first click is delayed
                             // Self::start_autoclick(self, 0u64);
-                            self.is_executing = true
+                            self.is_autoclicking = true
                         }
                     }
                 });
@@ -999,7 +991,7 @@ impl eframe::App for RustyAutoClickerApp {
                             .clicked()
                         {
                             // Allow keybind only if app is not busy
-                            if !self.is_executing
+                            if !self.is_autoclicking
                                 && !self.is_setting_autoclick_key
                                 && !self.is_setting_coord
                                 && !self.is_setting_set_coord_key
@@ -1028,7 +1020,7 @@ impl eframe::App for RustyAutoClickerApp {
                             .clicked()
                         {
                             // Allow keybind only if app is not busy
-                            if !self.is_executing
+                            if !self.is_autoclicking
                                 && !self.is_setting_autoclick_key
                                 && !self.is_setting_coord
                                 && !self.is_setting_set_coord_key
