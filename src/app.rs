@@ -329,7 +329,7 @@ fn autoclick(
     click_position: ClickPosition,
     click_coord: (f64, f64),
     click_type: ClickType,
-    click_btn: Button,    
+    click_btn: Button,
     mut rng_thread: ThreadRng,
 ) {
     // Set the amount of runs/clicks required
