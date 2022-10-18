@@ -371,14 +371,6 @@ fn autoclick(
             click_x,
             click_y
         );
-        move_to(
-            app_mode,
-            click_position,
-            (click_x, click_y),
-            is_moving_humanlike,
-            (mouse_coord.0.to_f64(), mouse_coord.1.to_f64()),
-            movement_delay_in_ms,
-        );
 
         // perform clicks
         for n in 1..=run_amount {
@@ -391,11 +383,17 @@ fn autoclick(
 
             // Move mouse to saved coordinates if requested
             if click_position == ClickPosition::Coord {
-                // move to final destination
-                send(&EventType::MouseMove {
-                    x: click_coord.0,
-                    y: click_coord.1,
-                });
+                // only move if start pos and click pos are not identical
+                if click_x != mouse_coord.0.to_f64() || click_y != mouse_coord.1.to_f64() {
+                    move_to(
+                        app_mode,
+                        click_position,
+                        (click_x, click_y),
+                        is_moving_humanlike,
+                        (mouse_coord.0.to_f64(), mouse_coord.1.to_f64()),
+                        movement_delay_in_ms,
+                    );
+                }
             }
 
             send(&EventType::ButtonPress(click_btn));
