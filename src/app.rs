@@ -323,6 +323,7 @@ fn move_to(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn autoclick(
     app_mode: AppMode,
     click_position: ClickPosition,
@@ -945,7 +946,7 @@ impl eframe::App for RustyAutoClickerApp {
                             .clicked()
                         {
                             // Start autoclick, first click is delayed
-                            // Self::start_autoclick(self, 0u64);
+                            Self::start_autoclick(self, 0u64);
                             self.is_autoclicking = true
                         }
                     }
