@@ -468,28 +468,6 @@ impl eframe::App for RustyAutoClickerApp {
         let click_x: f64 = parse_string_to_f64(self.click_x_str.clone());
         let click_y: f64 = parse_string_to_f64(self.click_y_str.clone());
 
-        // Toggle autoclicking
-        if self.key_autoclick.is_some() && keys.contains(&self.key_autoclick.unwrap()) {
-            self.key_pressed_autoclick = true;
-        } else if self.key_pressed_autoclick {
-            self.key_pressed_autoclick = false;
-            if self.is_autoclicking {
-                self.is_autoclicking = false;
-            } else {
-                // Set only if app is not busy
-                if !self.is_setting_autoclick_key
-                    && !self.is_setting_coord
-                    && !self.is_setting_set_coord_key
-                    && !self.hotkey_window_open
-                {
-                    self.click_counter = 0u64;
-                    self.is_autoclicking = true;
-                    self.rng_thread = thread_rng();
-                }
-                self.last_now = Instant::now();
-            }
-        }
-
         // Close hotkeys window if escape pressed & released
         if self.hotkey_window_open {
             if keys.contains(&Keycode::Escape) {
@@ -747,30 +725,31 @@ impl eframe::App for RustyAutoClickerApp {
                     });
                 });
                 ui.separator();
-                ui.label("Movement delay");
+                ui.horizontal_wrapped(|ui| {
+                    ui.label("Movement delay (Humanlike only)");
 
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                    ui.label("ms");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.movement_ms_str)
-                            .desired_width(40.0f32)
-                            .hint_text("20"),
-                    );
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                        ui.label("ms");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.movement_ms_str)
+                                .desired_width(40.0f32)
+                                .hint_text("20"),
+                        );
 
-                    ui.label("sec");
-                    if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.movement_sec_str)
-                            .desired_width(40.0f32)
-                            .hint_text("0"),
-                    );
+                        ui.label("sec");
+                        if self.is_autoclicking || self.hotkey_window_open {
+                            ui.set_enabled(false);
+                        };
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.movement_sec_str)
+                                .desired_width(40.0f32)
+                                .hint_text("0"),
+                        );
+                    });
                 });
-
                 ui.separator();
 
                 ui.horizontal_wrapped(|ui| {
