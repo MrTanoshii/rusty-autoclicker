@@ -5,13 +5,16 @@
 
 use eframe::egui;
 
+mod constants;
+use crate::constants::*;
+
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let native_options = eframe::NativeOptions {
         always_on_top: true,
         decorated: true,
-        initial_window_size: Some(egui::vec2(550f32, 309f32)),
+        initial_window_size: Some(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT)),
         resizable: false,
         transparent: true,
         icon_data: Some(load_icon("assets/icon-64x64.ico")),
