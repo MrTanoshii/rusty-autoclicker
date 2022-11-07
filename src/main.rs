@@ -15,6 +15,7 @@ use eframe::egui;
 fn main() {
     let native_options = eframe::NativeOptions {
         always_on_top: true,
+        decorated: true,
         initial_window_size: Some(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT)),
         resizable: false,
         transparent: true,
