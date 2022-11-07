@@ -4,13 +4,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] //Hide console window in release builds on Windows, this blocks stdout.
 
 mod app;
-mod constants;
+mod defines;
 
 use app::RustyAutoClickerApp;
-use constants::*;
+use defines::*;
 use eframe::egui;
 
-// When compiling natively:
+// When compiling natively
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let native_options = eframe::NativeOptions {
@@ -22,8 +22,9 @@ fn main() {
         icon_data: Some(load_icon("assets/icon-64x64.ico")),
         ..Default::default()
     };
+
     eframe::run_native(
-        "Rusty AutoClicker v2.1.0",
+        &format!("{} v{}", APP_NAME, env!("CARGO_PKG_VERSION")),
         native_options,
         Box::new(|cc| {
             cc.egui_ctx.set_visuals(egui::Visuals::dark());
