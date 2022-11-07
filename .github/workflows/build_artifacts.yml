@@ -1,0 +1,54 @@
+name: Build artifacts
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    name: Building ${{ matrix.build_target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build_target: [linux, macos, windows]
+        include:
+          - build_target: linux
+            os: ubuntu-latest
+          - build_target: macos
+            os: macos-latest
+          - build_target: windows
+            os: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: rui314/setup-mold@v1 # faster linker
+        with:
+          make-default: false
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target
+          key: ${{ runner.os }}-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.OS }}-release-
+        if: matrix.os == 'ubuntu-latest'
+      - name: Building
+        run: cargo build --release
+      - name: Creating ./bin directory
+        run: mkdir -p bin
+      - name: Renaming binaries [Windows]
+        if: matrix.os == 'windows-latest'
+        run: mv target/release/rusty-autoclicker.exe bin/rusty-autoclicker-${{ matrix.build_target }}.exe
+      - name: Renaming binaries [Others]
+        if: matrix.os != 'windows-latest'
+        run: mv target/release/rusty-autoclicker bin/rusty-autoclicker-${{ matrix.build_target }}
+      - name: Tarball Linux/MacOS binary
+        if: matrix.os != 'windows-latest'
+        run: tar -czf bin/rusty-autoclicker-${{ matrix.build_target }}{.tar.gz,}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: rusty-autoclicker-${{ matrix.build_target }}
+          path: bin/rusty-autoclicker-*
