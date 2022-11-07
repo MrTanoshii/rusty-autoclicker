@@ -17,7 +17,7 @@ use eframe::{
 
 use sanitizer::prelude::StringSanitizer;
 
-use crate::constants::*;
+use crate::defines::*;
 
 #[derive(PartialEq, Debug, Copy, Clone)]
 enum ClickType {
