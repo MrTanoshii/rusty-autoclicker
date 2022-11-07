@@ -19,7 +19,7 @@ fn main() -> io::Result<()> {
             "msvc" => {}
             _ => panic!("unsupported target-env: {}", env),
         };
-        res.set_icon("assets/icon-64x64.ico");
+        res.set_icon("assets/icon-256.ico");
         res.compile()?;
     }
     Ok(())
