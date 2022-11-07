@@ -11,7 +11,7 @@ fn main() -> io::Result<()> {
         let env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap();
         match env.as_str() {
             "gnu" => {
-                // I'm not sure whether this works the same if build on windows; not tested
+                // Not sure whether this works the same if build on windows; needs testing
                 // Perfectly fine if cross compiling from linux
                 res.set_ar_path("x86_64-w64-mingw32-ar")
                     .set_windres_path("x86_64-w64-mingw32-windres");
