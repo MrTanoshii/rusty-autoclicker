@@ -9,9 +9,6 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 [dependencies]
 rand = "0.8"
 device_query = "1.1"
@@ -21,9 +18,16 @@ rdev = "0.5"
 sanitizer = { version = "0.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
+[build-dependencies]
+# https://github.com/mxre/winres/issues/40
+winres = { git = "https://github.com/Nilstrieb/winres", branch = "linking-flags" }
+
 [features]
 default = []
-persistence = ["eframe/persistence", "serde"] # Enable if you want to persist app state on shutdown
+persistence = [
+    "eframe/persistence",
+    "serde",
+] # Enable if you want to persist app state on shutdown
 
 [profile.release]
 opt-level = 3 # all optimizations
@@ -38,3 +42,5 @@ strip = true
 
 # If you fork https://github.com/emilk/egui you can test with:
 # eframe = { path = "../egui/eframe" }
+
+[package.metadata.winres]
