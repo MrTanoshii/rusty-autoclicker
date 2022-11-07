@@ -3,10 +3,12 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] //Hide console window in release builds on Windows, this blocks stdout.
 
-use eframe::egui;
-
+mod app;
 mod constants;
-use crate::constants::*;
+
+use app::RustyAutoClickerApp;
+use constants::*;
+use eframe::egui;
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
@@ -25,10 +27,11 @@ fn main() {
         native_options,
         Box::new(|cc| {
             cc.egui_ctx.set_visuals(egui::Visuals::dark());
-            Box::new(rusty_autoclicker::RustyAutoClickerApp::new(cc))
+            Box::new(RustyAutoClickerApp::new(cc))
         }),
     );
 }
+
 pub fn load_icon(path: &str) -> eframe::IconData {
     let (icon_rgba, icon_width, icon_height) = {
         let image = image::open(path)
