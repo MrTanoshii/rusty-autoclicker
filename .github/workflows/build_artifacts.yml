@@ -3,6 +3,9 @@ on:
   workflow_dispatch:
   workflow_call:
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   build:
     name: Building ${{ matrix.build_target }}
@@ -19,7 +22,10 @@ jobs:
             os: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: actions-rs/rust-toolchain@v1
+        with:
+          toolchain: stable
+          override: true
       - uses: rui314/setup-mold@v1 # faster linker
         with:
           make-default: false
@@ -33,7 +39,7 @@ jobs:
             target
           key: ${{ runner.os }}-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.OS }}-release-
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' # caching on linux
       - name: Building
         run: cargo build --release
       - name: Creating ./bin directory
