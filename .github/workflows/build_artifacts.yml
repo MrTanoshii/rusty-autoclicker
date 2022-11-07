@@ -16,7 +16,7 @@ jobs:
         include:
           - build_target: linux
             os: ubuntu-latest
-          - build_target: macos
+          - build_target: macos # macos build fails, no idea why
             os: macos-latest
           - build_target: windows
             os: windows-latest
