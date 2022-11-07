@@ -16,7 +16,7 @@ jobs:
         with:
           path: bin
       - name: Creating draft release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        # if: startsWith(github.ref, 'refs/tags/') # limit releases to tags
         uses: softprops/action-gh-release@v1
         with:
           files: bin/*/rusty-autoclicker-*
