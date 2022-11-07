@@ -8,11 +8,7 @@ on:
       - '**.rs'
       - 'Cargo.lock'
       - 'Cargo.toml'
-    tags-ignore:
-      - dev-build
-
-env:
-  dev_tag: dev-build
+  workflow_dispatch:
 
 jobs:
   build:
