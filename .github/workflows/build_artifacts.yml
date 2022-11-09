@@ -16,16 +16,17 @@ jobs:
         include:
           - build_target: linux
             os: ubuntu-latest
-          - build_target: macos # macos build fails, no idea why
+          - build_target: macos
             os: macos-latest
           - build_target: windows
             os: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/rust-toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
+      # - uses: actions-rs/rust-toolchain@v1 # !not working on my end for some reason
+      #   with:
+      #     toolchain: stable
+      #     override: true
       - uses: rui314/setup-mold@v1 # faster linker
         with:
           make-default: false
@@ -49,6 +50,7 @@ jobs:
         run: mv target/release/rusty-autoclicker.exe bin/rusty-autoclicker-${{ matrix.build_target }}.exe
       - name: Renaming binaries [Others]
         if: matrix.os != 'windows-latest'
+        # TODO: fix this cmd for macos build
         run: mv target/release/rusty-autoclicker bin/rusty-autoclicker-${{ matrix.build_target }}
       - name: Tarball Linux/MacOS binary
         if: matrix.os != 'windows-latest'
