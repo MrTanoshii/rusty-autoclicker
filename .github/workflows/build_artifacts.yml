@@ -8,8 +8,9 @@ env:
 
 jobs:
   build:
-    name: Building ${{ matrix.build_target }}
+    name: Building for ${{ matrix.build_target }}
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         build_target: [linux, macos, windows]
@@ -20,15 +21,17 @@ jobs:
             os: macos-latest
           - build_target: windows
             os: windows-latest
+
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
+
       - uses: rui314/setup-mold@v1 # faster linker
         with:
-          # i.e. not in use unless cargo is explicitly told to use this linker
           make-default: false
+
       - uses: actions/cache@v3
-        if: matrix.os == 'ubuntu-latest' # caching on linux
+        if: matrix.os == 'ubuntu-latest'
         with:
           path: |
             ~/.cargo/bin/
@@ -38,19 +41,27 @@ jobs:
             target
           key: ${{ runner.os }}-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.OS }}-release-
-      - name: Building
+
+      - name: Build
         run: cargo build --release --verbose
-      - name: Creating ./bin directory
+
+      - name: Create ./bin directory
         run: mkdir -p bin
-      - name: Renaming binaries [Windows]
+
+      - name: Rename binaries [Windows]
         if: matrix.os == 'windows-latest'
         run: mv target/release/rusty-autoclicker.exe bin/rusty-autoclicker-${{ matrix.build_target }}.exe
-      - name: Renaming binaries [Others]
+
+      - name: Rename binaries [Others]
         if: matrix.os != 'windows-latest'
         run: mv target/release/rusty-autoclicker bin/rusty-autoclicker-${{ matrix.build_target }}
+
       - name: Tarball Linux/MacOS binary
         if: matrix.os != 'windows-latest'
-        run: tar -czf bin/rusty-autoclicker-${{ matrix.build_target }}{.tar.gz,} && rm bin/rusty-autoclicker-${{ matrix.build_target }}
+        run: |
+            tar -czf bin/rusty-autoclicker-${{ matrix.target }}{.tar.gz,} && \
+            rm bin/rusty-autoclicker-${{ matrix.target }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
