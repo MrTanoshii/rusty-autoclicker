@@ -64,9 +64,7 @@ jobs:
 
       - name: Tarball Linux/MacOS binary
         if: matrix.os != 'windows-latest'
-        run: |
-            tar -czf bin/rusty-autoclicker-${{ matrix.build_target }}{.tar.gz,} && \
-            rm bin/rusty-autoclicker-${{ matrix.build_target }}
+        run: cd bin/ && tar -czf rusty-autoclicker-${{ matrix.build_target }}{.tar.gz,} --remove-files
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
