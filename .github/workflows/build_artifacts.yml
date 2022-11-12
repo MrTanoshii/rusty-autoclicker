@@ -59,19 +59,10 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: mv target/release/rusty-autoclicker.exe bin/rusty-autoclicker-${{ matrix.build_target }}.exe
 
-      - name: Rename binaries [Others]
+      - name: Rename & tarball binaries [Others]
         if: matrix.os != 'windows-latest'
-        run: mv target/release/rusty-autoclicker bin/rusty-autoclicker-${{ matrix.build_target }}
-
-      - name: Tarball binary [Linux]
-        if: matrix.os == 'ubuntu-latest'
         run: |
-          cd bin/
-          tar -czf rusty-autoclicker-${{ matrix.build_target }}{.tar.gz,} --remove-files
-
-      - name: Tarball binary [macOS]
-        if: matrix.os == 'macos-latest'
-        run: |
+          mv target/release/rusty-autoclicker bin/rusty-autoclicker-${{ matrix.build_target }}
           cd bin/
           tar -czf rusty-autoclicker-${{ matrix.build_target }}{.tar.gz,}
           rm rusty-autoclicker-${{ matrix.build_target }}
