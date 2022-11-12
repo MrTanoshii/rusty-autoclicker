@@ -30,7 +30,8 @@ jobs:
         with:
           make-default: false
 
-      - uses: actions/cache@v3
+      - name: Setup cache [Linux]
+        uses: actions/cache@v3
         if: matrix.os == 'ubuntu-latest'
         with:
           path: |
@@ -42,11 +43,11 @@ jobs:
           key: ${{ runner.os }}-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.OS }}-release-
 
-      - name: Setup dependencies for Linux
+      - name: Setup dependencies [Linux]
         if: matrix.os == 'ubuntu-latest'
         run: |
-            sudo apt-get --assume-yes install libx11-dev libxtst-dev libevdev-dev libxcb-render0-dev \
-            libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
+          sudo apt-get --assume-yes install libx11-dev libxtst-dev libevdev-dev libxcb-render0-dev \
+          libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
 
       - name: Build
         run: cargo build --release --verbose
