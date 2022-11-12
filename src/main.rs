@@ -19,7 +19,7 @@ fn main() {
         initial_window_size: Some(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT)),
         resizable: false,
         transparent: true,
-        icon_data: Some(load_icon()),
+        icon_data: Some(u8slice_to_icon_data(APP_ICON).unwrap()),
         ..Default::default()
     };
 
@@ -33,21 +33,16 @@ fn main() {
     );
 }
 
-pub fn load_icon() -> eframe::IconData {
+fn u8slice_to_icon_data(buf: &[u8]) -> image::ImageResult<eframe::IconData> {
     let (icon_rgba, icon_width, icon_height) = {
-        let embedded_ico = include_bytes!("../assets/icon-64x64.ico");
-        let image = image::load_from_memory(embedded_ico)
-            .expect("Failed to open icon path")
-            .into_rgba8();
-
-        let (width, height) = image.dimensions();
-        let rgba = image.into_raw();
-        (rgba, width, height)
+        let icon = image::load_from_memory(buf)?.to_rgba8();
+        let (width, height) = icon.dimensions();
+        (icon.into_raw(), width, height)
     };
 
-    eframe::IconData {
+    Ok(eframe::IconData {
         rgba: icon_rgba,
         width: icon_width,
         height: icon_height,
-    }
+    })
 }
