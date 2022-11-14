@@ -253,20 +253,12 @@ fn send(event_type: &EventType) {
     }
 }
 
-fn parse_string_to_u64(string: String) -> u64 {
-    let mut unsigned_int: u64 = 0u64;
-    if !string.is_empty() {
-        unsigned_int = string.parse().unwrap();
-    }
-    unsigned_int
+fn parse_string_to_u64(string: &str) -> u64 {
+    string.parse().unwrap_or_default()
 }
 
-fn parse_string_to_f64(string: String) -> f64 {
-    let mut float: f64 = 0f64;
-    if !string.is_empty() {
-        float = string.parse().unwrap();
-    }
-    float
+fn parse_string_to_f64(string: &str) -> f64 {
+    string.parse().unwrap_or_default()
 }
 
 fn move_to(
@@ -448,25 +440,25 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.movement_ms_str, 5usize);
 
         // Parse time Strings to u64
-        let hr: u64 = parse_string_to_u64(self.hr_str.clone());
-        let min: u64 = parse_string_to_u64(self.min_str.clone());
-        let sec: u64 = parse_string_to_u64(self.sec_str.clone());
-        let ms: u64 = parse_string_to_u64(self.ms_str.clone());
+        let hr: u64 = parse_string_to_u64(&self.hr_str);
+        let min: u64 = parse_string_to_u64(&self.min_str);
+        let sec: u64 = parse_string_to_u64(&self.sec_str);
+        let ms: u64 = parse_string_to_u64(&self.ms_str);
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse movement Strings to u64
-        let movement_sec: u64 = parse_string_to_u64(self.movement_sec_str.clone());
-        let movement_ms: u64 = parse_string_to_u64(self.movement_ms_str.clone());
+        let movement_sec: u64 = parse_string_to_u64(&self.movement_sec_str);
+        let movement_ms: u64 = parse_string_to_u64(&self.movement_ms_str);
 
         // Calculate movement delay
         let movement_delay_in_ms: u64 = (movement_sec * 1000u64) + movement_ms;
 
         // Parse click amount String to u64
-        let click_amount: u64 = parse_string_to_u64(self.click_amount_str.clone());
+        let click_amount: u64 = parse_string_to_u64(&self.click_amount_str);
 
         // Parse mouse coordinates Strings to f64
-        let click_x: f64 = parse_string_to_f64(self.click_x_str.clone());
-        let click_y: f64 = parse_string_to_f64(self.click_y_str.clone());
+        let click_x: f64 = parse_string_to_f64(&self.click_x_str);
+        let click_y: f64 = parse_string_to_f64(&self.click_y_str);
 
         // Close hotkeys window if escape pressed & released
         if self.hotkey_window_open {
