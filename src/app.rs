@@ -166,7 +166,7 @@ impl RustyAutoClickerApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let ctx = &cc.egui_ctx;
 
-        let mut style: egui::Style = (*ctx.style()).clone();
+        let mut style = (*ctx.style()).clone();
         let font = FontId {
             size: 14.0f32,
             family: FontFamily::Monospace,
@@ -222,7 +222,7 @@ impl RustyAutoClickerApp {
 // Provides sanitation for input string
 fn sanitize_string(string: &mut String, max_length: usize) {
     // Accept numeric only
-    let s_slice: &str = &*string;
+    let s_slice = string.as_str();
     let mut sanitizer = StringSanitizer::from(s_slice);
     sanitizer.numeric();
     *string = sanitizer.get();
@@ -353,7 +353,7 @@ fn autoclick(
     // Autoclick to emulate a humanlike clicks
     } else if app_mode == AppMode::Humanlike {
         let click_x = click_coord.0;
-        let click_y: f64 = click_coord.1;
+        let click_y = click_coord.1;
         // move to target
         #[cfg(debug_assertions)]
         println!(
@@ -425,8 +425,8 @@ impl eframe::App for RustyAutoClickerApp {
 
         // Get mouse & keyboard states
         let device_state = DeviceState::new();
-        let mouse: MouseState = device_state.get_mouse();
-        let keys: Vec<Keycode> = device_state.get_keys();
+        let mouse = device_state.get_mouse();
+        let keys = device_state.get_keys();
 
         // Input sanitation
         sanitize_string(&mut self.hr_str, 5usize);
@@ -440,25 +440,25 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.movement_ms_str, 5usize);
 
         // Parse time Strings to u64
-        let hr: u64 = parse_string_to_u64(&self.hr_str);
-        let min: u64 = parse_string_to_u64(&self.min_str);
-        let sec: u64 = parse_string_to_u64(&self.sec_str);
-        let ms: u64 = parse_string_to_u64(&self.ms_str);
+        let hr = parse_string_to_u64(&self.hr_str);
+        let min = parse_string_to_u64(&self.min_str);
+        let sec = parse_string_to_u64(&self.sec_str);
+        let ms = parse_string_to_u64(&self.ms_str);
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse movement Strings to u64
-        let movement_sec: u64 = parse_string_to_u64(&self.movement_sec_str);
-        let movement_ms: u64 = parse_string_to_u64(&self.movement_ms_str);
+        let movement_sec = parse_string_to_u64(&self.movement_sec_str);
+        let movement_ms = parse_string_to_u64(&self.movement_ms_str);
 
         // Calculate movement delay
-        let movement_delay_in_ms: u64 = (movement_sec * 1000u64) + movement_ms;
+        let movement_delay_in_ms = (movement_sec * 1000u64) + movement_ms;
 
         // Parse click amount String to u64
-        let click_amount: u64 = parse_string_to_u64(&self.click_amount_str);
+        let click_amount = parse_string_to_u64(&self.click_amount_str);
 
         // Parse mouse coordinates Strings to f64
-        let click_x: f64 = parse_string_to_f64(&self.click_x_str);
-        let click_y: f64 = parse_string_to_f64(&self.click_y_str);
+        let click_x = parse_string_to_f64(&self.click_x_str);
+        let click_y = parse_string_to_f64(&self.click_y_str);
 
         // Close hotkeys window if escape pressed & released
         if self.hotkey_window_open {
