@@ -5,7 +5,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use device_query::{DeviceQuery, DeviceState, Keycode, MouseState};
+use device_query::{DeviceQuery, DeviceState, Keycode};
 
 use rdev::{simulate, Button, EventType, SimulateError};
 
