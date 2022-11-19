@@ -475,7 +475,7 @@ impl eframe::App for RustyAutoClickerApp {
         // }
 
         // Calculate click interval
-        let interval: u64 = (hr * 3600000u64) + (min * 60000u64) + (sec * 1000u64) + ms;
+        let interval: u64 = (hr * 3600000) + (min * 60000) + (sec * 1000) + ms;
 
         let update_now = Instant::now();
 
