@@ -1,7 +1,7 @@
 // #![allow(unused_imports)]
 use rand::{prelude::ThreadRng, thread_rng, Rng};
 use std::{
-    env, str, thread,
+    env, thread,
     time::{Duration, Instant},
 };
 
