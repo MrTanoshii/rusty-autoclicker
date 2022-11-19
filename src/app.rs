@@ -253,14 +253,6 @@ fn send(event_type: &EventType) {
     }
 }
 
-fn parse_string_to_u64(string: &str) -> u64 {
-    string.parse().unwrap_or_default()
-}
-
-fn parse_string_to_f64(string: &str) -> f64 {
-    string.parse().unwrap_or_default()
-}
-
 fn move_to(
     app_mode: AppMode,
     click_position: ClickPosition,
@@ -440,25 +432,25 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.movement_ms_str, 5usize);
 
         // Parse time Strings to u64
-        let hr = parse_string_to_u64(&self.hr_str);
-        let min = parse_string_to_u64(&self.min_str);
-        let sec = parse_string_to_u64(&self.sec_str);
-        let ms = parse_string_to_u64(&self.ms_str);
+        let hr: u64 = self.hr_str.parse().unwrap_or_default();
+        let min: u64 = self.min_str.parse().unwrap_or_default();
+        let sec: u64 = self.sec_str.parse().unwrap_or_default();
+        let ms: u64 = self.ms_str.parse().unwrap_or_default();
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse movement Strings to u64
-        let movement_sec = parse_string_to_u64(&self.movement_sec_str);
-        let movement_ms = parse_string_to_u64(&self.movement_ms_str);
+        let movement_sec: u64 = self.movement_sec_str.parse().unwrap_or_default();
+        let movement_ms: u64 = self.movement_ms_str.parse().unwrap_or_default();
 
         // Calculate movement delay
         let movement_delay_in_ms = (movement_sec * 1000u64) + movement_ms;
 
         // Parse click amount String to u64
-        let click_amount = parse_string_to_u64(&self.click_amount_str);
+        let click_amount: u64 = self.click_amount_str.parse().unwrap_or_default();
 
         // Parse mouse coordinates Strings to f64
-        let click_x = parse_string_to_f64(&self.click_x_str);
-        let click_y = parse_string_to_f64(&self.click_y_str);
+        let click_x: f64 = self.click_x_str.parse().unwrap_or_default();
+        let click_y: f64 = self.click_y_str.parse().unwrap_or_default();
 
         // Close hotkeys window if escape pressed & released
         if self.hotkey_window_open {
