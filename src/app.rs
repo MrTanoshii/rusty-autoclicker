@@ -1,11 +1,11 @@
 // #![allow(unused_imports)]
 use rand::{prelude::ThreadRng, thread_rng, Rng};
 use std::{
-    env, str, thread,
+    env, thread,
     time::{Duration, Instant},
 };
 
-use device_query::{DeviceQuery, DeviceState, Keycode, MouseState};
+use device_query::{DeviceQuery, DeviceState, Keycode};
 
 use rdev::{simulate, Button, EventType, SimulateError};
 
@@ -166,7 +166,7 @@ impl RustyAutoClickerApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let ctx = &cc.egui_ctx;
 
-        let mut style: egui::Style = (*ctx.style()).clone();
+        let mut style = (*ctx.style()).clone();
         let font = FontId {
             size: 14.0f32,
             family: FontFamily::Monospace,
@@ -222,7 +222,7 @@ impl RustyAutoClickerApp {
 // Provides sanitation for input string
 fn sanitize_string(string: &mut String, max_length: usize) {
     // Accept numeric only
-    let s_slice: &str = &*string;
+    let s_slice = string.as_str();
     let mut sanitizer = StringSanitizer::from(s_slice);
     sanitizer.numeric();
     *string = sanitizer.get();
@@ -251,22 +251,6 @@ fn send(event_type: &EventType) {
     if env::consts::OS == "macos" {
         thread::sleep(Duration::from_millis(20u64));
     }
-}
-
-fn parse_string_to_u64(string: String) -> u64 {
-    let mut unsigned_int: u64 = 0u64;
-    if !string.is_empty() {
-        unsigned_int = string.parse().unwrap();
-    }
-    unsigned_int
-}
-
-fn parse_string_to_f64(string: String) -> f64 {
-    let mut float: f64 = 0f64;
-    if !string.is_empty() {
-        float = string.parse().unwrap();
-    }
-    float
 }
 
 fn move_to(
@@ -361,7 +345,7 @@ fn autoclick(
     // Autoclick to emulate a humanlike clicks
     } else if app_mode == AppMode::Humanlike {
         let click_x = click_coord.0;
-        let click_y: f64 = click_coord.1;
+        let click_y = click_coord.1;
         // move to target
         #[cfg(debug_assertions)]
         println!(
@@ -433,8 +417,8 @@ impl eframe::App for RustyAutoClickerApp {
 
         // Get mouse & keyboard states
         let device_state = DeviceState::new();
-        let mouse: MouseState = device_state.get_mouse();
-        let keys: Vec<Keycode> = device_state.get_keys();
+        let mouse = device_state.get_mouse();
+        let keys = device_state.get_keys();
 
         // Input sanitation
         sanitize_string(&mut self.hr_str, 5usize);
@@ -448,25 +432,25 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.movement_ms_str, 5usize);
 
         // Parse time Strings to u64
-        let hr: u64 = parse_string_to_u64(self.hr_str.clone());
-        let min: u64 = parse_string_to_u64(self.min_str.clone());
-        let sec: u64 = parse_string_to_u64(self.sec_str.clone());
-        let ms: u64 = parse_string_to_u64(self.ms_str.clone());
+        let hr: u64 = self.hr_str.parse().unwrap_or_default();
+        let min: u64 = self.min_str.parse().unwrap_or_default();
+        let sec: u64 = self.sec_str.parse().unwrap_or_default();
+        let ms: u64 = self.ms_str.parse().unwrap_or_default();
         // println!("{} hr {} min {} sec {} ms", &hr, min, sec, ms);
 
         // Parse movement Strings to u64
-        let movement_sec: u64 = parse_string_to_u64(self.movement_sec_str.clone());
-        let movement_ms: u64 = parse_string_to_u64(self.movement_ms_str.clone());
+        let movement_sec: u64 = self.movement_sec_str.parse().unwrap_or_default();
+        let movement_ms: u64 = self.movement_ms_str.parse().unwrap_or_default();
 
         // Calculate movement delay
-        let movement_delay_in_ms: u64 = (movement_sec * 1000u64) + movement_ms;
+        let movement_delay_in_ms = (movement_sec * 1000u64) + movement_ms;
 
         // Parse click amount String to u64
-        let click_amount: u64 = parse_string_to_u64(self.click_amount_str.clone());
+        let click_amount: u64 = self.click_amount_str.parse().unwrap_or_default();
 
         // Parse mouse coordinates Strings to f64
-        let click_x: f64 = parse_string_to_f64(self.click_x_str.clone());
-        let click_y: f64 = parse_string_to_f64(self.click_y_str.clone());
+        let click_x: f64 = self.click_x_str.parse().unwrap_or_default();
+        let click_y: f64 = self.click_y_str.parse().unwrap_or_default();
 
         // Close hotkeys window if escape pressed & released
         if self.hotkey_window_open {
@@ -491,7 +475,7 @@ impl eframe::App for RustyAutoClickerApp {
         // }
 
         // Calculate click interval
-        let interval: u64 = (hr * 3600000u64) + (min * 60000u64) + (sec * 1000u64) + ms;
+        let interval: u64 = (hr * 3600000) + (min * 60000) + (sec * 1000) + ms;
 
         let update_now = Instant::now();
 
