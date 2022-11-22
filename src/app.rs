@@ -219,7 +219,11 @@ impl RustyAutoClickerApp {
     }
 }
 
-// Provides sanitation for input string
+/// Sanitize string
+///
+/// # Arguments
+/// `string` - String to sanitize
+/// `max_length` - Maximum length of string
 fn sanitize_string(string: &mut String, max_length: usize) {
     // Accept numeric only
     let s_slice = string.as_str();
@@ -232,6 +236,28 @@ fn sanitize_string(string: &mut String, max_length: usize) {
         string.remove(0);
     }
 
+    truncate_string(string, max_length);
+}
+
+/// Sanitize string of expected i64 type
+///
+/// # Arguments
+/// `string` - String to sanitize
+/// `max_length` - Maximum length of string
+fn sanitize_i64_string(string: &mut String, max_length: usize) {
+    // Remove leading & trailing whitespaces
+    // Parse to i64 or return default of 0
+    *string = string.trim().parse::<i64>().unwrap_or_default().to_string();
+
+    truncate_string(string, max_length);
+}
+
+/// Truncate string to specified length
+///
+/// # Arguments
+/// * `string` - String to be truncated
+/// * `max_length` - Maximum length of string
+fn truncate_string(string: &mut String, max_length: usize) {
     // Allow max size of `max_length` characters
     if string.len() >= max_length {
         string.truncate(max_length)
@@ -426,8 +452,8 @@ impl eframe::App for RustyAutoClickerApp {
         sanitize_string(&mut self.sec_str, 5usize);
         sanitize_string(&mut self.ms_str, 5usize);
         sanitize_string(&mut self.click_amount_str, 5usize);
-        sanitize_string(&mut self.click_x_str, 7usize);
-        sanitize_string(&mut self.click_y_str, 7usize);
+        sanitize_i64_string(&mut self.click_x_str, 7usize);
+        sanitize_i64_string(&mut self.click_y_str, 7usize);
         sanitize_string(&mut self.movement_sec_str, 5usize);
         sanitize_string(&mut self.movement_ms_str, 5usize);
 
