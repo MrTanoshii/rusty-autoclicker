@@ -184,6 +184,11 @@ impl RustyAutoClickerApp {
         Default::default()
     }
 
+    /// Enter the coordinate setting mode
+    ///
+    /// # Arguments
+    ///
+    /// * `frame` - The frame to manipulate
     fn enter_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
         self.is_setting_coord = true;
         self.window_position = frame.info().window_info.position.unwrap();
@@ -191,6 +196,11 @@ impl RustyAutoClickerApp {
         frame.set_decorations(false);
     }
 
+    /// Make frame follow cursor with an offset
+    ///
+    /// # Arguments
+    ///
+    /// * `frame` - The frame to set the window position on
     fn follow_cursor(&mut self, frame: &mut eframe::Frame) {
         let offset = egui::Vec2 { x: 15f32, y: 15f32 };
         frame.set_window_pos(
@@ -201,6 +211,11 @@ impl RustyAutoClickerApp {
         );
     }
 
+    /// Exit the coordinate setting mode
+    ///
+    /// # Arguments
+    ///
+    /// * `frame` - The frame to manipulate
     fn exit_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
         frame.set_decorations(true);
         frame.set_window_size(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -208,6 +223,11 @@ impl RustyAutoClickerApp {
         self.is_setting_coord = false;
     }
 
+    /// Start the autoclicking process
+    ///
+    /// # Arguments
+    ///
+    /// * `negative_click_start_offset` - The offset to start the click counter at
     fn start_autoclick(&mut self, negative_click_start_offset: u64) {
         self.click_counter = 0u64;
         self.is_autoclicking = !self.is_autoclicking;
@@ -222,8 +242,9 @@ impl RustyAutoClickerApp {
 /// Sanitize string
 ///
 /// # Arguments
-/// `string` - String to sanitize
-/// `max_length` - Maximum length of string
+///
+/// * `string` - String to sanitize
+/// * `max_length` - Maximum length of string
 fn sanitize_string(string: &mut String, max_length: usize) {
     // Accept numeric only
     let s_slice = string.as_str();
@@ -242,8 +263,9 @@ fn sanitize_string(string: &mut String, max_length: usize) {
 /// Sanitize string of expected i64 type
 ///
 /// # Arguments
-/// `string` - String to sanitize
-/// `max_length` - Maximum length of string
+///
+/// * `string` - String to sanitize
+/// * `max_length` - Maximum length of string
 fn sanitize_i64_string(string: &mut String, max_length: usize) {
     // Remove leading & trailing whitespaces
     // Parse to i64 or return default of 0
@@ -255,6 +277,7 @@ fn sanitize_i64_string(string: &mut String, max_length: usize) {
 /// Truncate string to specified length
 ///
 /// # Arguments
+///
 /// * `string` - String to be truncated
 /// * `max_length` - Maximum length of string
 fn truncate_string(string: &mut String, max_length: usize) {
@@ -264,7 +287,11 @@ fn truncate_string(string: &mut String, max_length: usize) {
     };
 }
 
-// Simulate event - rdev crate
+/// Send the simulated event (`rdev` crate)
+///
+/// # Arguments
+///
+/// * `event_type` - The event type to simulate
 fn send(event_type: &EventType) {
     match simulate(event_type) {
         Ok(()) => (),
@@ -279,6 +306,17 @@ fn send(event_type: &EventType) {
     }
 }
 
+/// Move the mouse to the specified coordinates
+/// Work if app is in "Humandlike" mode only
+///
+/// # Arguments
+///
+/// * `app_mode` - The app mode
+/// * `click_position` - The click position type
+/// * `click_coord` - The click coordinates
+/// * `is_moving_humanlike` - Is humanlike mouse movement enabled
+/// * `start_coords` - The starting mouse coordinates
+/// * `movement_delay_in_ms` - The delay between mouse movements in milliseconds
 fn move_to(
     app_mode: AppMode,
     click_position: ClickPosition,
@@ -333,6 +371,19 @@ fn move_to(
     }
 }
 
+/// Autoclick the mouse
+///
+/// # Arguments
+///
+/// * `app_mode` - The app mode
+/// * `click_position` - The click position type
+/// * `click_coord` - The click coordinates
+/// * `click_type` - The click type
+/// * `click_btn` - The click button
+/// * `mouse_coord` - The mouse coordinates
+/// * `is_moving_humanlike` - Is humanlike mouse movement enabled
+/// * `movement_delay_in_ms` - The delay between mouse movements in milliseconds
+/// * `rng_thread` - The random number generator thread
 #[allow(clippy::too_many_arguments)]
 fn autoclick(
     app_mode: AppMode,
