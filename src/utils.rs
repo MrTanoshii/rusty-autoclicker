@@ -171,10 +171,7 @@ fn move_to(
 /// # Arguments
 ///
 /// * `app_mode` - The app mode
-/// * `click_position` - The click position type
-/// * `click_coord` - The click coordinates
-/// * `click_type` - The click type
-/// * `click_btn` - The click button
+/// * `click_info` - The click information
 /// * `mouse_coord` - The mouse coordinates
 /// * `is_moving_humanlike` - Is humanlike mouse movement enabled
 /// * `movement_delay_in_ms` - The delay between mouse movements in milliseconds
