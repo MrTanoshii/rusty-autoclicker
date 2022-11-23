@@ -5,7 +5,7 @@ use eframe::egui;
 use rdev::Button;
 
 use crate::{
-    types::{AppMode, ClickPosition, ClickType},
+    types::{AppMode, ClickInfo, ClickPosition, ClickType},
     utils::{autoclick, sanitize_i64_string, sanitize_string},
     RustyAutoClickerApp,
 };
@@ -137,10 +137,12 @@ impl eframe::App for RustyAutoClickerApp {
 
             autoclick(
                 self.app_mode,
-                self.click_position,
-                (click_x, click_y),
-                self.click_type,
-                self.click_btn,
+                ClickInfo {
+                    click_btn: self.click_btn,
+                    click_coord: (click_x, click_y),
+                    click_position: self.click_position,
+                    click_type: self.click_type,
+                },
                 mouse.coords,
                 self.is_moving_humanlike,
                 movement_delay_in_ms,

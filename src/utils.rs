@@ -2,7 +2,7 @@ use std::{env, thread, time::Duration};
 
 use eframe::emath::Numeric;
 use rand::{prelude::ThreadRng, Rng};
-use rdev::{simulate, Button, EventType, SimulateError};
+use rdev::{simulate, EventType, SimulateError};
 use sanitizer::prelude::StringSanitizer;
 
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
         DURATION_DOUBLE_CLICK_MIN, MOUSE_STEP_NEG_X, MOUSE_STEP_NEG_Y, MOUSE_STEP_POS_X,
         MOUSE_STEP_POS_Y,
     },
-    types::{AppMode, ClickPosition, ClickType},
+    types::{AppMode, ClickInfo, ClickPosition, ClickType},
 };
 
 /// Load icon from memory and return it
@@ -179,22 +179,18 @@ fn move_to(
 /// * `is_moving_humanlike` - Is humanlike mouse movement enabled
 /// * `movement_delay_in_ms` - The delay between mouse movements in milliseconds
 /// * `rng_thread` - The random number generator thread
-#[allow(clippy::too_many_arguments)]
 pub fn autoclick(
     app_mode: AppMode,
-    click_position: ClickPosition,
-    click_coord: (f64, f64),
-    click_type: ClickType,
-    click_btn: Button,
+    click_info: ClickInfo,
     mouse_coord: (i32, i32),
     is_moving_humanlike: bool,
     movement_delay_in_ms: u64,
     mut rng_thread: ThreadRng,
 ) {
     // Set the amount of runs/clicks required
-    let run_amount: u8 = if click_type == ClickType::Single {
+    let run_amount: u8 = if click_info.click_type == ClickType::Single {
         1
-    } else if click_type == ClickType::Double {
+    } else if click_info.click_type == ClickType::Double {
         2
     } else {
         0
@@ -204,20 +200,20 @@ pub fn autoclick(
     if app_mode == AppMode::Bot {
         for _n in 1..=run_amount {
             // Move mouse to saved coordinates if requested
-            if click_position == ClickPosition::Coord {
+            if click_info.click_position == ClickPosition::Coord {
                 send(&EventType::MouseMove {
-                    x: click_coord.0,
-                    y: click_coord.1,
+                    x: click_info.click_coord.0,
+                    y: click_info.click_coord.1,
                 })
             }
 
-            send(&EventType::ButtonPress(click_btn));
-            send(&EventType::ButtonRelease(click_btn));
+            send(&EventType::ButtonPress(click_info.click_btn));
+            send(&EventType::ButtonRelease(click_info.click_btn));
         }
     // Autoclick to emulate a humanlike clicks
     } else if app_mode == AppMode::Humanlike {
-        let click_x = click_coord.0;
-        let click_y = click_coord.1;
+        let click_x = click_info.click_coord.0;
+        let click_y = click_info.click_coord.1;
         // move to target
         #[cfg(debug_assertions)]
         println!(
@@ -238,12 +234,12 @@ pub fn autoclick(
             }
 
             // Move mouse to saved coordinates if requested
-            if click_position == ClickPosition::Coord {
+            if click_info.click_position == ClickPosition::Coord {
                 // only move if start pos and click pos are not identical
                 if click_x != mouse_coord.0.to_f64() || click_y != mouse_coord.1.to_f64() {
                     move_to(
                         app_mode,
-                        click_position,
+                        click_info.click_position,
                         (click_x, click_y),
                         is_moving_humanlike,
                         (mouse_coord.0.to_f64(), mouse_coord.1.to_f64()),
@@ -252,11 +248,11 @@ pub fn autoclick(
                 }
             }
 
-            send(&EventType::ButtonPress(click_btn));
+            send(&EventType::ButtonPress(click_info.click_btn));
             thread::sleep(Duration::from_millis(
                 rng_thread.gen_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
             ));
-            send(&EventType::ButtonRelease(click_btn));
+            send(&EventType::ButtonRelease(click_info.click_btn));
         }
     }
 }
