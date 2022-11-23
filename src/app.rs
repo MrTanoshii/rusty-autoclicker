@@ -325,47 +325,48 @@ fn move_to(
     start_coords: (f64, f64),
     movement_delay_in_ms: u64,
 ) {
-    if app_mode == AppMode::Humanlike {
+    if app_mode == AppMode::Humanlike
+        && click_position == ClickPosition::Coord
+        && is_moving_humanlike
+    {
         // Move mouse slowly to saved coordinates if requested
-        if click_position == ClickPosition::Coord && is_moving_humanlike {
-            let mut current_x = start_coords.0;
-            let mut current_y = start_coords.1;
-            loop {
-                // horizontal movement: determine whether we need to move left, right or not at all
-                let delta_x: f64 = if current_x < click_coord.0 {
-                    MOUSE_STEP_POS_X.min(click_coord.0 - current_x)
-                } else if current_x > click_coord.0 {
-                    MOUSE_STEP_NEG_X.max(click_coord.0 - current_x)
-                } else {
-                    0.0
-                };
+        let mut current_x = start_coords.0;
+        let mut current_y = start_coords.1;
+        loop {
+            // horizontal movement: determine whether we need to move left, right or not at all
+            let delta_x: f64 = if current_x < click_coord.0 {
+                MOUSE_STEP_POS_X.min(click_coord.0 - current_x)
+            } else if current_x > click_coord.0 {
+                MOUSE_STEP_NEG_X.max(click_coord.0 - current_x)
+            } else {
+                0.0
+            };
 
-                // vertical movement: determine whether we need to move up, down or not at all
-                let delta_y: f64 = if current_y < click_coord.1 {
-                    MOUSE_STEP_POS_Y.min(click_coord.1 - current_y)
-                } else if current_y > click_coord.1 {
-                    MOUSE_STEP_NEG_Y.max(click_coord.1 - current_y)
-                } else {
-                    0.0
-                };
+            // vertical movement: determine whether we need to move up, down or not at all
+            let delta_y: f64 = if current_y < click_coord.1 {
+                MOUSE_STEP_POS_Y.min(click_coord.1 - current_y)
+            } else if current_y > click_coord.1 {
+                MOUSE_STEP_NEG_Y.max(click_coord.1 - current_y)
+            } else {
+                0.0
+            };
 
-                current_x += delta_x;
-                current_y += delta_y;
+            current_x += delta_x;
+            current_y += delta_y;
 
-                #[cfg(debug_assertions)]
-                println!(
-                    "Moving by {:?} / {:?}, new pos: {:?} / {:?}",
-                    delta_x, delta_y, current_x, current_y
-                );
-                send(&EventType::MouseMove {
-                    x: current_x,
-                    y: current_y,
-                });
+            #[cfg(debug_assertions)]
+            println!(
+                "Moving by {:?} / {:?}, new pos: {:?} / {:?}",
+                delta_x, delta_y, current_x, current_y
+            );
+            send(&EventType::MouseMove {
+                x: current_x,
+                y: current_y,
+            });
 
-                thread::sleep(Duration::from_millis(movement_delay_in_ms));
-                if current_x == click_coord.0 && current_y == click_coord.1 {
-                    return;
-                }
+            thread::sleep(Duration::from_millis(movement_delay_in_ms));
+            if current_x == click_coord.0 && current_y == click_coord.1 {
+                return;
             }
         }
     }
