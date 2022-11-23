@@ -18,36 +18,7 @@ use eframe::{
 use sanitizer::prelude::StringSanitizer;
 
 use crate::defines::*;
-
-#[derive(PartialEq, Debug, Copy, Clone)]
-enum ClickType {
-    Single,
-    Double,
-}
-
-#[derive(PartialEq, Copy, Clone)]
-enum ClickPosition {
-    Mouse,
-    Coord,
-}
-
-#[derive(PartialEq, Copy, Clone)]
-enum AppMode {
-    Bot,
-    Humanlike,
-}
-
-// ranges for click durations
-const DURATION_CLICK_MIN: u64 = 20;
-const DURATION_CLICK_MAX: u64 = 40;
-const DURATION_DOUBLE_CLICK_MIN: u64 = 30;
-const DURATION_DOUBLE_CLICK_MAX: u64 = 60;
-
-// step widths for human-like mouse movement
-pub const MOUSE_STEP_POS_X: f64 = 10.0;
-pub const MOUSE_STEP_NEG_X: f64 = -10.0;
-pub const MOUSE_STEP_POS_Y: f64 = 10.0;
-pub const MOUSE_STEP_NEG_Y: f64 = -10.0;
+use crate::types::{AppMode, ClickPosition, ClickType};
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]

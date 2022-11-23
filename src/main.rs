@@ -5,6 +5,7 @@
 
 mod app;
 mod defines;
+mod types;
 
 use app::RustyAutoClickerApp;
 use defines::*;
@@ -35,8 +36,7 @@ fn main() {
 
 pub fn load_icon() -> eframe::IconData {
     let (icon_rgba, icon_width, icon_height) = {
-        let embedded_ico = include_bytes!("../assets/icon-64x64.ico");
-        let image = image::load_from_memory(embedded_ico)
+        let image = image::load_from_memory(APP_ICON)
             .expect("Failed to open icon path")
             .into_rgba8();
 
