@@ -108,21 +108,16 @@ fn send(event_type: &EventType) {
 /// * `app_mode` - The app mode
 /// * `click_position` - The click position type
 /// * `click_coord` - The click coordinates
-/// * `is_moving_humanlike` - Is humanlike mouse movement enabled
 /// * `start_coords` - The starting mouse coordinates
 /// * `movement_delay_in_ms` - The delay between mouse movements in milliseconds
 fn move_to(
     app_mode: AppMode,
     click_position: ClickPosition,
     click_coord: (f64, f64),
-    is_moving_humanlike: bool,
     start_coords: (f64, f64),
     movement_delay_in_ms: u64,
 ) {
-    if app_mode == AppMode::Humanlike
-        && click_position == ClickPosition::Coord
-        && is_moving_humanlike
-    {
+    if app_mode == AppMode::Humanlike && click_position == ClickPosition::Coord {
         // Move mouse slowly to saved coordinates if requested
         let mut current_x = start_coords.0;
         let mut current_y = start_coords.1;
@@ -173,14 +168,12 @@ fn move_to(
 /// * `app_mode` - The app mode
 /// * `click_info` - The click information
 /// * `mouse_coord` - The mouse coordinates
-/// * `is_moving_humanlike` - Is humanlike mouse movement enabled
 /// * `movement_delay_in_ms` - The delay between mouse movements in milliseconds
 /// * `rng_thread` - The random number generator thread
 pub fn autoclick(
     app_mode: AppMode,
     click_info: ClickInfo,
     mouse_coord: (i32, i32),
-    is_moving_humanlike: bool,
     movement_delay_in_ms: u64,
     mut rng_thread: ThreadRng,
 ) {
@@ -238,7 +231,6 @@ pub fn autoclick(
                         app_mode,
                         click_info.click_position,
                         (click_x, click_y),
-                        is_moving_humanlike,
                         (mouse_coord.0.to_f64(), mouse_coord.1.to_f64()),
                         movement_delay_in_ms,
                     );

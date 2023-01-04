@@ -43,7 +43,6 @@ pub struct RustyAutoClickerApp {
     pub is_setting_coord: bool,
     pub is_setting_autoclick_key: bool,
     pub is_setting_set_coord_key: bool,
-    pub is_moving_humanlike: bool,
 
     // App mode
     pub app_mode: AppMode,
@@ -97,7 +96,6 @@ impl Default for RustyAutoClickerApp {
             is_setting_coord: false,
             is_setting_autoclick_key: false,
             is_setting_set_coord_key: false,
-            is_moving_humanlike: true,
 
             // App mode
             app_mode: AppMode::Bot,

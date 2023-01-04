@@ -144,7 +144,6 @@ impl eframe::App for RustyAutoClickerApp {
                     click_type: self.click_type,
                 },
                 mouse.coords,
-                self.is_moving_humanlike,
                 movement_delay_in_ms,
                 self.rng_thread.clone(),
             );
