@@ -1,10 +1,7 @@
 use std::time::{Duration, Instant};
 
 use device_query::Keycode;
-use eframe::{
-    egui,
-    epaint::{FontFamily, FontId},
-};
+use eframe::{egui, epaint::FontId};
 use rand::{prelude::ThreadRng, thread_rng};
 use rdev::Button;
 
@@ -74,15 +71,15 @@ impl Default for RustyAutoClickerApp {
     fn default() -> Self {
         Self {
             // Text input strings
-            hr_str: "0".to_owned(),
-            min_str: "0".to_owned(),
-            sec_str: "0".to_owned(),
-            ms_str: "100".to_owned(),
-            click_amount_str: "0".to_owned(),
-            click_x_str: "0".to_owned(),
-            click_y_str: "0".to_owned(),
-            movement_sec_str: "0".to_owned(),
-            movement_ms_str: "20".to_owned(),
+            hr_str: DEFAULT_HR_STR.to_owned(),
+            min_str: DEFAULT_MIN_STR.to_owned(),
+            sec_str: DEFAULT_SEC_STR.to_owned(),
+            ms_str: DEFAULT_MS_STR.to_owned(),
+            click_amount_str: DEFAULT_CLICK_AMOUNT_STR.to_owned(),
+            click_x_str: DEFAULT_CLICK_X_STR.to_owned(),
+            click_y_str: DEFAULT_CLICK_Y_STR.to_owned(),
+            movement_sec_str: DEFAULT_MOVEMENT_SEC_STR.to_owned(),
+            movement_ms_str: DEFAULT_MOVEMENT_MS_STR.to_owned(),
 
             // Time
             last_now: Instant::now(),
@@ -92,8 +89,8 @@ impl Default for RustyAutoClickerApp {
             click_counter: 0u64,
 
             // Hotkeys
-            key_autoclick: Some(Keycode::F6),
-            key_set_coord: Some(Keycode::Escape),
+            key_autoclick: HOTKEY_AUTOCLICK,
+            key_set_coord: HOTKEY_SET_COORD,
 
             // App state
             is_autoclicking: false,
@@ -132,8 +129,8 @@ impl RustyAutoClickerApp {
 
         let mut style = (*ctx.style()).clone();
         let font = FontId {
-            size: 12.0f32,
-            family: FontFamily::Monospace,
+            size: FONT_SIZE,
+            family: FONT_FAMILY,
         };
         style.override_font_id = Some(font);
         ctx.set_style(style);
