@@ -638,5 +638,10 @@ impl eframe::App for RustyAutoClickerApp {
                 .checked_duration_since(self.frame_start)
                 .unwrap()
         );
+
+        // On web, the browser controls the gui zoom.
+        if !frame.is_web() {
+            egui::gui_zoom::zoom_with_keyboard_shortcuts(ctx, frame.info().native_pixels_per_point);
+        }
     }
 }

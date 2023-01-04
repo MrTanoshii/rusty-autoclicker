@@ -132,7 +132,7 @@ impl RustyAutoClickerApp {
 
         let mut style = (*ctx.style()).clone();
         let font = FontId {
-            size: 14.0f32,
+            size: 12.0f32,
             family: FontFamily::Monospace,
         };
         style.override_font_id = Some(font);
