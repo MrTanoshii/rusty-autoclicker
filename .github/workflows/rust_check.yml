@@ -19,53 +19,55 @@ jobs:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
           toolchain: stable
           components: rustfmt
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - name: Format Rust code
+        run: cargo fmt --all -- --check
 
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
           components: clippy
-          override: true
       - name: Setup device_query dependencies
         run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+      - name: Lint Rust code
+        run: cargo clippy -- -D warnings
 
   check:
     name: Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
           toolchain: stable
-          override: true
       - name: Setup device_query dependencies
         run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
         run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          #args: --all-features
+      - name: Check
+        run: cargo check
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup device_query dependencies
+        run: sudo apt-get install libx11-dev
+      - name: Setup rdev dependencies
+        run: sudo apt-get --assume-yes install libxtst-dev libevdev-dev
+      - name: Setup eframe dependencies
+        run: sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
+      - name: Test
+        run: cargo test --verbose --lib

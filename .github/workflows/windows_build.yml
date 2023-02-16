@@ -16,17 +16,12 @@ env:
 
 jobs:
   win_gnu_build:
-    name: Windows GNU Build
-    runs-on: ubuntu-latest
+    name: Windows Build
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: x86_64-pc-windows-gnu
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: build
-          args: --verbose --target x86_64-pc-windows-gnu
+          target: x86_64-pc-windows-msvc
+      - name: Build
+        run: cargo build --verbose --target x86_64-pc-windows-msvc
