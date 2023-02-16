@@ -37,5 +37,6 @@ fn main() {
             cc.egui_ctx.set_visuals(egui::Visuals::dark());
             Box::new(RustyAutoClickerApp::new(cc))
         }),
-    );
+    )
+    .unwrap();
 }

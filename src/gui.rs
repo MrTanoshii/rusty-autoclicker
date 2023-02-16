@@ -11,8 +11,8 @@ use crate::{
 };
 
 impl eframe::App for RustyAutoClickerApp {
-    fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
-        egui::Rgba::TRANSPARENT
+    fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
+        egui::Rgba::TRANSPARENT.to_array() // Make sure we don't paint anything behind the rounded corners
     }
 
     /// Called by the frame work to save state before shutdown.
