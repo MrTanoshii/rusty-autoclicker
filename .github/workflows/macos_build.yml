@@ -20,12 +20,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           target: x86_64-apple-darwin
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose --target x86_64-apple-darwin
+      - name: Build
+        run: cargo build --verbose --target x86_64-apple-darwin
