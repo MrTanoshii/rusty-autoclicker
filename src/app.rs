@@ -180,6 +180,7 @@ impl RustyAutoClickerApp {
         frame.set_window_size(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
         frame.set_window_pos(self.window_position);
         self.is_setting_coord = false;
+        self.click_position = ClickPosition::Coord;
     }
 
     /// Start the autoclicking process
