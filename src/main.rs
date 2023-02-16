@@ -5,40 +5,37 @@
 
 use eframe::egui;
 
-// When compiling natively:
+mod app;
+mod defines;
+mod gui;
+mod types;
+mod utils;
+
+use crate::{
+    app::RustyAutoClickerApp,
+    defines::{APP_NAME, WINDOW_HEIGHT, WINDOW_WIDTH},
+    utils::load_icon,
+};
+
+// When compiling natively
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let native_options = eframe::NativeOptions {
         always_on_top: true,
         decorated: true,
-        initial_window_size: Some(egui::vec2(550f32, 309f32)),
+        initial_window_size: Some(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT)),
         resizable: false,
         transparent: true,
-        icon_data: Some(load_icon("assets/icon-64x64.ico")),
+        icon_data: Some(load_icon()),
         ..Default::default()
     };
+
     eframe::run_native(
-        "Rusty AutoClicker v2.1.0",
+        &format!("{} v{}", APP_NAME, env!("CARGO_PKG_VERSION")),
         native_options,
         Box::new(|cc| {
             cc.egui_ctx.set_visuals(egui::Visuals::dark());
-            Box::new(rusty_autoclicker::RustyAutoClickerApp::new(cc))
+            Box::new(RustyAutoClickerApp::new(cc))
         }),
     );
-}
-pub fn load_icon(path: &str) -> eframe::IconData {
-    let (icon_rgba, icon_width, icon_height) = {
-        let image = image::open(path)
-            .expect("Failed to open icon path")
-            .into_rgba8();
-        let (width, height) = image.dimensions();
-        let rgba = image.into_raw();
-        (rgba, width, height)
-    };
-
-    eframe::IconData {
-        rgba: icon_rgba,
-        width: icon_width,
-        height: icon_height,
-    }
 }

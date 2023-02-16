@@ -1,0 +1,74 @@
+name: Build artifacts
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Building for ${{ matrix.build_target }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        build_target: [linux, macos, windows]
+        include:
+          - build_target: linux
+            os: ubuntu-latest
+          - build_target: macos
+            os: macos-latest
+          - build_target: windows
+            os: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: rui314/setup-mold@v1 # faster linker
+        with:
+          make-default: false
+
+      - name: Setup cache [Linux]
+        uses: actions/cache@v3
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target
+          key: ${{ runner.os }}-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.OS }}-release-
+
+      - name: Setup dependencies [Linux]
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get --assume-yes install libx11-dev libxtst-dev libevdev-dev libxcb-render0-dev \
+          libxcb-shape0-dev libxcb-xfixes0-dev libspeechd-dev libxkbcommon-dev libssl-dev
+
+      - name: Build
+        run: cargo build --release --verbose
+
+      - name: Create ./bin directory
+        run: mkdir -p bin
+
+      - name: Rename binaries [Windows]
+        if: matrix.os == 'windows-latest'
+        run: mv target/release/rusty-autoclicker.exe bin/rusty-autoclicker-${{ matrix.build_target }}.exe
+
+      - name: Rename & tarball binaries [Others]
+        if: matrix.os != 'windows-latest'
+        run: |
+          mv target/release/rusty-autoclicker bin/rusty-autoclicker-${{ matrix.build_target }}
+          cd bin/
+          tar -czf rusty-autoclicker-${{ matrix.build_target }}{.tar.gz,}
+          rm rusty-autoclicker-${{ matrix.build_target }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: rusty-autoclicker-${{ matrix.build_target }}
+          path: bin/rusty-autoclicker-*
