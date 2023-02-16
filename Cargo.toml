@@ -12,8 +12,8 @@ edition = "2021"
 [dependencies]
 rand = "0.8"
 device_query = "1.1"
-eframe = "0.20" # Gives us egui, epi and web+native backends
-image = "0.24.2"
+eframe = "0.21" # Gives us egui, epi and web+native backends
+image = "0.24"
 rdev = "0.5"
 sanitizer = { version = "0.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
@@ -34,13 +34,5 @@ opt-level = 3 # all optimizations
 lto = true
 codegen-units = 1
 strip = true
-
-[patch.crates-io]
-
-# If you want to use the bleeding edge version of `egui`:
-# eframe = { git = "https://github.com/emilk/egui", branch = "master" }
-
-# If you fork https://github.com/emilk/egui you can test with:
-# eframe = { path = "../egui/eframe" }
 
 [package.metadata.winres]
