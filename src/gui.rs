@@ -489,7 +489,7 @@ impl eframe::App for RustyAutoClickerApp {
                     .join(" ");
 
                 ui.label(format!(
-                    "Mouse pressed: L-{:?} R-{:?} M-{:?} {}",
+                    "Mouse pressed: L-{:?} M-{:?} R-{:?} {}",
                     mouse.button_pressed[1],
                     mouse.button_pressed[2],
                     mouse.button_pressed[3],
