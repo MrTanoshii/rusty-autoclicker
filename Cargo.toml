@@ -11,8 +11,8 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8"
-device_query = "1.1"
-eframe = "0.21" # Gives us egui, epi and web+native backends
+device_query = "2.1.0"
+eframe = "0.23" # Gives us egui, epi and web+native backends
 image = "0.24"
 rdev = "0.5"
 sanitizer = { version = "0.1", features = ["derive"] }
