@@ -20,13 +20,16 @@ use crate::{
 // When compiling natively
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
+    use eframe::egui::ViewportBuilder;
+
     let native_options = eframe::NativeOptions {
-        always_on_top: true,
-        decorated: true,
-        initial_window_size: Some(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT)),
-        resizable: false,
-        transparent: true,
-        icon_data: Some(load_icon()),
+        viewport: ViewportBuilder::default()
+            .with_always_on_top()
+            .with_decorations(true)
+            .with_inner_size(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT))
+            .with_resizable(true)
+            .with_transparent(true)
+            .with_icon(load_icon()),
         ..Default::default()
     };
 
@@ -35,7 +38,7 @@ fn main() {
         native_options,
         Box::new(|cc| {
             cc.egui_ctx.set_visuals(egui::Visuals::dark());
-            Box::new(RustyAutoClickerApp::new(cc))
+            Ok(Box::new(RustyAutoClickerApp::new(cc)))
         }),
     )
     .unwrap();

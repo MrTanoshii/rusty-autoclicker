@@ -147,38 +147,43 @@ impl RustyAutoClickerApp {
     ///
     /// # Arguments
     ///
-    /// * `frame` - The frame to manipulate
-    pub fn enter_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
+    /// * `ctx` - The ctx to manipulate
+    pub fn enter_coordinate_setting(&mut self, ctx: &egui::Context) {
         self.is_setting_coord = true;
-        self.window_position = frame.info().window_info.position.unwrap();
-        frame.set_window_size(egui::vec2(400f32, 30f32));
-        frame.set_decorations(false);
+        self.window_position =
+            ctx.input(|input_state| input_state.viewport().outer_rect.unwrap().min);
+        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(egui::vec2(400f32, 30f32)));
+        ctx.send_viewport_cmd(egui::ViewportCommand::Decorations(false));
     }
 
     /// Make frame follow cursor with an offset
     ///
     /// # Arguments
     ///
-    /// * `frame` - The frame to set the window position on
-    pub fn follow_cursor(&mut self, frame: &mut eframe::Frame) {
+    /// * `ctx` - The ctx to set the window position on
+    pub fn follow_cursor(&mut self, ctx: &egui::Context) {
         let offset = egui::Vec2 { x: 15f32, y: 15f32 };
-        frame.set_window_pos(
+        ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(
             egui::pos2(
                 self.click_x_str.parse().unwrap(),
                 self.click_y_str.parse().unwrap(),
             ) + offset,
-        );
+        ));
     }
 
     /// Exit the coordinate setting mode
     ///
     /// # Arguments
     ///
-    /// * `frame` - The frame to manipulate
-    pub fn exit_coordinate_setting(&mut self, frame: &mut eframe::Frame) {
-        frame.set_decorations(true);
-        frame.set_window_size(egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
-        frame.set_window_pos(self.window_position);
+    /// * `ctx` - The ctx to manipulate
+    pub fn exit_coordinate_setting(&mut self, ctx: &egui::Context) {
+        ctx.send_viewport_cmd(egui::ViewportCommand::Decorations(true));
+        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(egui::vec2(
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT,
+        )));
+        ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(self.window_position));
+
         self.is_setting_coord = false;
         self.click_position = ClickPosition::Coord;
     }
