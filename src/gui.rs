@@ -24,7 +24,7 @@ impl eframe::App for RustyAutoClickerApp {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Print time to between start of old and new frames
         #[cfg(debug_assertions)]
         println!(
@@ -183,7 +183,7 @@ impl eframe::App for RustyAutoClickerApp {
             if mouse.button_pressed[1]
                 || (self.key_set_coord.is_some() && keys.contains(&self.key_set_coord.unwrap()))
             {
-                Self::exit_coordinate_setting(self, frame);
+                Self::exit_coordinate_setting(self, ctx);
             }
         }
 
@@ -203,7 +203,7 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.horizontal_wrapped(|ui| {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                             if self.is_autoclicking || self.hotkey_window_open {
-                                ui.set_enabled(false);
+                                ui.disable();
                             };
                             ui.add(
                                 egui::TextEdit::singleline(&mut self.click_y_str)
@@ -212,7 +212,7 @@ impl eframe::App for RustyAutoClickerApp {
                             );
                             ui.label("Y");
                             if self.is_autoclicking || self.hotkey_window_open {
-                                ui.set_enabled(false);
+                                ui.disable();
                             };
                             ui.add(
                                 egui::TextEdit::singleline(&mut self.click_x_str)
@@ -229,7 +229,7 @@ impl eframe::App for RustyAutoClickerApp {
                     });
                 })
             });
-            Self::follow_cursor(self, frame);
+            Self::follow_cursor(self, ctx);
         } else {
             // GUI
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
@@ -244,7 +244,7 @@ impl eframe::App for RustyAutoClickerApp {
                         };
                     } else {
                         if self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         }
                         let text: String = if self.key_autoclick.is_none() {
                             "🖱 START".to_string()
@@ -270,12 +270,12 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.label("App Mode: ");
 
                     if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
+                        ui.disable();
                     };
                     ui.selectable_value(&mut self.app_mode, AppMode::Bot, "🖥 Bot")
                         .on_hover_text("Autoclick as fast as possible");
                     if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
+                        ui.disable();
                     };
                     ui.selectable_value(&mut self.app_mode, AppMode::Humanlike, "😆 Humanlike")
                         .on_hover_text("Autoclick emulating human clicking");
@@ -291,7 +291,7 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.label("ms");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.ms_str)
@@ -301,7 +301,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                         ui.label("sec");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.sec_str)
@@ -311,7 +311,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                         ui.label("min");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.min_str)
@@ -321,7 +321,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                         ui.label("hr");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.hr_str)
@@ -337,7 +337,7 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.label("ms");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.movement_ms_str)
@@ -347,7 +347,7 @@ impl eframe::App for RustyAutoClickerApp {
 
                         ui.label("sec");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.movement_sec_str)
@@ -362,15 +362,15 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.label("Mouse Button");
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.selectable_value(&mut self.click_btn, Button::Right, "Right");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.selectable_value(&mut self.click_btn, Button::Middle, "Middle");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.selectable_value(&mut self.click_btn, Button::Left, "Left");
                     });
@@ -382,11 +382,11 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.label("Click Type");
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.selectable_value(&mut self.click_type, ClickType::Double, "Double");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.selectable_value(&mut self.click_type, ClickType::Single, "Single");
                     });
@@ -398,7 +398,7 @@ impl eframe::App for RustyAutoClickerApp {
                     ui.label("Click Amount (0 = forever)");
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.click_amount_str)
@@ -418,17 +418,17 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.horizontal_wrapped(|ui| {
                     ui.label("Click Position");
                     if self.is_autoclicking || self.hotkey_window_open {
-                        ui.set_enabled(false);
+                        ui.disable();
                     };
                     if ui
                         .add_sized([80.0f32, 16.0f32], egui::widgets::Button::new("Set Coords"))
                         .clicked()
                     {
-                        Self::enter_coordinate_setting(self, frame);
+                        Self::enter_coordinate_setting(self, ctx);
                     };
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.click_y_str)
@@ -437,7 +437,7 @@ impl eframe::App for RustyAutoClickerApp {
                         );
                         ui.label("Y");
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         ui.add(
                             egui::TextEdit::singleline(&mut self.click_x_str)
@@ -447,7 +447,7 @@ impl eframe::App for RustyAutoClickerApp {
                         ui.label("X");
 
                         if self.is_autoclicking || self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         };
                         if ui
                             .selectable_value(
@@ -501,7 +501,7 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                     if self.is_autoclicking {
                         if self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         }
                         if ui
                             .add_sized(
@@ -517,7 +517,7 @@ impl eframe::App for RustyAutoClickerApp {
                         };
                     } else {
                         if self.hotkey_window_open {
-                            ui.set_enabled(false);
+                            ui.disable();
                         }
                         let text: String = if self.key_autoclick.is_none() {
                             "🖱 START".to_string()
@@ -585,7 +585,7 @@ impl eframe::App for RustyAutoClickerApp {
                             }
                         };
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                            ui.set_enabled(false);
+                            ui.disable();
                             let text: String = if self.key_autoclick.is_none() {
                                 "PRESS ANY KEY".to_string()
                             } else {
@@ -614,7 +614,7 @@ impl eframe::App for RustyAutoClickerApp {
                             }
                         };
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                            ui.set_enabled(false);
+                            ui.disable();
                             let text: String = if self.key_set_coord.is_none() {
                                 "PRESS ANY KEY".to_string()
                             } else {
@@ -637,10 +637,5 @@ impl eframe::App for RustyAutoClickerApp {
                 .checked_duration_since(self.frame_start)
                 .unwrap()
         );
-
-        // On web, the browser controls the gui zoom.
-        if !frame.is_web() {
-            egui::gui_zoom::zoom_with_keyboard_shortcuts(ctx, frame.info().native_pixels_per_point);
-        }
     }
 }

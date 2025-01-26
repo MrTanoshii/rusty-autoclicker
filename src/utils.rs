@@ -15,7 +15,7 @@ use crate::{
 };
 
 /// Load icon from memory and return it
-pub fn load_icon() -> eframe::IconData {
+pub fn load_icon() -> eframe::egui::IconData {
     let (icon_rgba, icon_width, icon_height) = {
         let image = image::load_from_memory(APP_ICON)
             .expect("Failed to open icon path")
@@ -26,7 +26,7 @@ pub fn load_icon() -> eframe::IconData {
         (rgba, width, height)
     };
 
-    eframe::IconData {
+    eframe::egui::IconData {
         rgba: icon_rgba,
         width: icon_width,
         height: icon_height,
