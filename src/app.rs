@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 
 use device_query::Keycode;
 use eframe::{egui, epaint::FontId};
-use rand::{prelude::ThreadRng, thread_rng};
+use rand::{prelude::ThreadRng, rng};
 use rdev::Button;
 
 use crate::{
@@ -116,7 +116,7 @@ impl Default for RustyAutoClickerApp {
             click_position: ClickPosition::Mouse,
 
             // RNG
-            rng_thread: thread_rng(),
+            rng_thread: rng(),
         }
     }
 }
@@ -196,7 +196,7 @@ impl RustyAutoClickerApp {
     pub fn start_autoclick(&mut self, negative_click_start_offset: u64) {
         self.click_counter = 0u64;
         self.is_autoclicking = !self.is_autoclicking;
-        self.rng_thread = thread_rng();
+        self.rng_thread = rng();
 
         self.last_now = Instant::now()
             .checked_sub(Duration::from_millis(negative_click_start_offset))

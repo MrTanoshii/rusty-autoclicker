@@ -1,9 +1,5 @@
 use std::io;
-use winres::WindowsResource;
-
-// Issues with winres to keep in mind:
-// https://github.com/mxre/winres/issues/32
-// https://github.com/mxre/winres/issues/40
+use winresource::WindowsResource;
 
 fn main() -> io::Result<()> {
     if std::env::var("CARGO_CFG_TARGET_FAMILY").unwrap() == "windows" {

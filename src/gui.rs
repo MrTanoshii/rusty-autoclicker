@@ -199,7 +199,7 @@ impl eframe::App for RustyAutoClickerApp {
 
         if self.is_setting_coord {
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-                egui::menu::bar(ui, |ui| {
+                egui::MenuBar::new().ui(ui, |ui| {
                     ui.horizontal_wrapped(|ui| {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                             if self.is_autoclicking || self.hotkey_window_open {
@@ -234,7 +234,7 @@ impl eframe::App for RustyAutoClickerApp {
             // GUI
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
                 // The top panel is often a good place for a menu bar:
-                egui::menu::bar(ui, |ui| {
+                egui::MenuBar::new().ui(ui, |ui| {
                     if self.is_autoclicking {
                         if ui
                             .button(format!("🖱 STOP ({})", self.key_autoclick.unwrap()))

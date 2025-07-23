@@ -219,7 +219,7 @@ pub fn autoclick(
             // Sleep between clicks
             if n % 2 == 0 {
                 thread::sleep(Duration::from_millis(
-                    rng_thread.gen_range(DURATION_DOUBLE_CLICK_MIN..DURATION_DOUBLE_CLICK_MAX),
+                    rng_thread.random_range(DURATION_DOUBLE_CLICK_MIN..DURATION_DOUBLE_CLICK_MAX),
                 ));
             }
 
@@ -239,7 +239,7 @@ pub fn autoclick(
 
             send(&EventType::ButtonPress(click_info.click_btn));
             thread::sleep(Duration::from_millis(
-                rng_thread.gen_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
+                rng_thread.random_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
             ));
             send(&EventType::ButtonRelease(click_info.click_btn));
         }
