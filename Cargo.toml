@@ -1,6 +1,6 @@
 [package]
 name = "rusty-autoclicker"
-version = "2.3.0"
+version = "2.4.0"
 repository = "https://github.com/MrTanoshii/rusty-autoclicker"
 readme = "README.md"
 rust-version = "1.85"
