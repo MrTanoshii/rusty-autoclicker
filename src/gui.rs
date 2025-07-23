@@ -5,9 +5,9 @@ use eframe::egui;
 use rdev::Button;
 
 use crate::{
+    RustyAutoClickerApp,
     types::{AppMode, ClickInfo, ClickPosition, ClickType},
     utils::{autoclick, sanitize_i64_string, sanitize_string},
-    RustyAutoClickerApp,
 };
 
 impl eframe::App for RustyAutoClickerApp {

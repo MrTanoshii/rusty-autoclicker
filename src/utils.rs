@@ -1,8 +1,8 @@
 use std::{env, thread, time::Duration};
 
 use eframe::emath::Numeric;
-use rand::{prelude::ThreadRng, Rng};
-use rdev::{simulate, EventType, SimulateError};
+use rand::{Rng, prelude::ThreadRng};
+use rdev::{EventType, SimulateError, simulate};
 use sanitizer::prelude::StringSanitizer;
 
 use crate::{
