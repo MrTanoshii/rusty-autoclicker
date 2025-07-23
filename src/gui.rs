@@ -5,9 +5,9 @@ use eframe::egui;
 use rdev::Button;
 
 use crate::{
+    RustyAutoClickerApp,
     types::{AppMode, ClickInfo, ClickPosition, ClickType},
     utils::{autoclick, sanitize_i64_string, sanitize_string},
-    RustyAutoClickerApp,
 };
 
 impl eframe::App for RustyAutoClickerApp {
@@ -199,7 +199,7 @@ impl eframe::App for RustyAutoClickerApp {
 
         if self.is_setting_coord {
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-                egui::menu::bar(ui, |ui| {
+                egui::MenuBar::new().ui(ui, |ui| {
                     ui.horizontal_wrapped(|ui| {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                             if self.is_autoclicking || self.hotkey_window_open {
@@ -234,7 +234,7 @@ impl eframe::App for RustyAutoClickerApp {
             // GUI
             egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
                 // The top panel is often a good place for a menu bar:
-                egui::menu::bar(ui, |ui| {
+                egui::MenuBar::new().ui(ui, |ui| {
                     if self.is_autoclicking {
                         if ui
                             .button(format!("🖱 STOP ({})", self.key_autoclick.unwrap()))
@@ -407,7 +407,7 @@ impl eframe::App for RustyAutoClickerApp {
                         );
                         if self.is_autoclicking && click_amount > 0u64 {
                             let remaining_clicks = click_amount.saturating_sub(self.click_counter);
-                            let remaining_text = format!("Remaining {:?}", remaining_clicks);
+                            let remaining_text = format!("Remaining {remaining_clicks:?}");
                             ui.label(remaining_text);
                         }
                     });
@@ -477,14 +477,14 @@ impl eframe::App for RustyAutoClickerApp {
 
                 let mouse_txt = format!("Mouse position: {:?}", mouse.coords);
                 ui.label(mouse_txt);
-                let key_txt = format!("Key pressed: {:?}", keys);
+                let key_txt = format!("Key pressed: {keys:?}");
                 ui.label(key_txt);
                 let extra_buttons_pressed = mouse
                     .button_pressed
                     .iter()
                     .enumerate()
                     .skip(4)
-                    .map(|(button_number, pressed)| format!("{:?}-{:?}", button_number, pressed))
+                    .map(|(button_number, pressed)| format!("{button_number:?}-{pressed:?}"))
                     .collect::<Vec<String>>()
                     .join(" ");
 
