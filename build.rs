@@ -13,7 +13,7 @@ fn main() -> io::Result<()> {
                     .set_windres_path("x86_64-w64-mingw32-windres");
             }
             "msvc" => {}
-            _ => panic!("unsupported target-env: {}", env),
+            _ => panic!("unsupported target-env: {env}"),
         };
         res.set_icon("assets/icon-256.ico");
         res.compile()?;

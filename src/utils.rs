@@ -90,7 +90,7 @@ fn send(event_type: &EventType) {
     match simulate(event_type) {
         Ok(()) => (),
         Err(SimulateError) => {
-            println!("We could not send {:?}", event_type);
+            println!("We could not send {event_type:?}");
         }
     }
 
@@ -144,10 +144,7 @@ fn move_to(
             current_y += delta_y;
 
             #[cfg(debug_assertions)]
-            println!(
-                "Moving by {:?} / {:?}, new pos: {:?} / {:?}",
-                delta_x, delta_y, current_x, current_y
-            );
+            println!("Moving by {delta_x:?} / {delta_y:?}, new pos: {current_x:?} / {current_y:?}");
             send(&EventType::MouseMove {
                 x: current_x,
                 y: current_y,
