@@ -12,11 +12,18 @@ edition = "2024"
 [dependencies]
 rand = "0.9"
 device_query = "4.0.1"
-eframe = "0.32.0" # Gives us egui, epi and web+native backends
+eframe = { version = "0.32", default-features = false, features = [
+    "accesskit",
+    "default_fonts",
+    "wgpu",
+    "wayland",
+    "x11",
+] }
 image = "0.25"
 rdev = "0.5"
 sanitizer = { version = "0.1.7", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
+wgpu = { version = "25.0", default-features = false, features = ["vulkan", "dx12", "metal"] }
 
 [build-dependencies]
 winresource = "0.1"
