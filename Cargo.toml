@@ -17,6 +17,7 @@ image = "0.24"
 rdev = "0.5"
 sanitizer = { version = "0.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
+native-dialog = "0.9"
 
 [build-dependencies]
 # https://github.com/mxre/winres/issues/40

@@ -33,13 +33,20 @@ fn main() {
         ..Default::default()
     };
 
-    eframe::run_native(
+    if let Err(e) = eframe::run_native(
         &format!("{} v{}", APP_NAME, env!("CARGO_PKG_VERSION")),
         native_options,
         Box::new(|cc| {
             cc.egui_ctx.set_visuals(egui::Visuals::dark());
             Ok(Box::new(RustyAutoClickerApp::new(cc)))
         }),
-    )
-    .unwrap();
+    ) {
+        native_dialog::DialogBuilder::message()
+            .set_level(native_dialog::MessageLevel::Error)
+            .set_title("Graphics error")
+            .set_text(&format!("{e}\n\nTry installing a graphics driver."))
+            .alert()
+            .show()
+            .unwrap();
+    };
 }
