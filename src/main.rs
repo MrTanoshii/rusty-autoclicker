@@ -23,6 +23,7 @@ fn main() {
     use eframe::egui::ViewportBuilder;
 
     let native_options = eframe::NativeOptions {
+        renderer: eframe::Renderer::Wgpu,
         viewport: ViewportBuilder::default()
             .with_always_on_top()
             .with_decorations(true)

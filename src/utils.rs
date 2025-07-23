@@ -1,8 +1,8 @@
 use std::{env, thread, time::Duration};
 
 use eframe::emath::Numeric;
-use rand::{prelude::ThreadRng, Rng};
-use rdev::{simulate, EventType, SimulateError};
+use rand::{Rng, prelude::ThreadRng};
+use rdev::{EventType, SimulateError, simulate};
 use sanitizer::prelude::StringSanitizer;
 
 use crate::{
@@ -90,7 +90,7 @@ fn send(event_type: &EventType) {
     match simulate(event_type) {
         Ok(()) => (),
         Err(SimulateError) => {
-            println!("We could not send {:?}", event_type);
+            println!("We could not send {event_type:?}");
         }
     }
 
@@ -144,10 +144,7 @@ fn move_to(
             current_y += delta_y;
 
             #[cfg(debug_assertions)]
-            println!(
-                "Moving by {:?} / {:?}, new pos: {:?} / {:?}",
-                delta_x, delta_y, current_x, current_y
-            );
+            println!("Moving by {delta_x:?} / {delta_y:?}, new pos: {current_x:?} / {current_y:?}");
             send(&EventType::MouseMove {
                 x: current_x,
                 y: current_y,
@@ -219,7 +216,7 @@ pub fn autoclick(
             // Sleep between clicks
             if n % 2 == 0 {
                 thread::sleep(Duration::from_millis(
-                    rng_thread.gen_range(DURATION_DOUBLE_CLICK_MIN..DURATION_DOUBLE_CLICK_MAX),
+                    rng_thread.random_range(DURATION_DOUBLE_CLICK_MIN..DURATION_DOUBLE_CLICK_MAX),
                 ));
             }
 
@@ -239,7 +236,7 @@ pub fn autoclick(
 
             send(&EventType::ButtonPress(click_info.click_btn));
             thread::sleep(Duration::from_millis(
-                rng_thread.gen_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
+                rng_thread.random_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
             ));
             send(&EventType::ButtonRelease(click_info.click_btn));
         }

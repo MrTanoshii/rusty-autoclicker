@@ -3,24 +3,30 @@ name = "rusty-autoclicker"
 version = "2.3.0"
 repository = "https://github.com/MrTanoshii/rusty-autoclicker"
 readme = "README.md"
-rust-version = "1.65"
+rust-version = "1.85"
 license-file = "LICENSE"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8"
-device_query = "2.1.0"
-eframe = "0.30.0" # Gives us egui, epi and web+native backends
-image = "0.24"
+rand = "0.9"
+device_query = "4.0.1"
+eframe = { version = "0.32", default-features = false, features = [
+    "accesskit",
+    "default_fonts",
+    "wgpu",
+    "wayland",
+    "x11",
+] }
+image = "0.25"
 rdev = "0.5"
-sanitizer = { version = "0.1", features = ["derive"] }
+sanitizer = { version = "0.1.7", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
+wgpu = { version = "25.0", default-features = false, features = ["vulkan", "dx12", "metal"] }
 
 [build-dependencies]
-# https://github.com/mxre/winres/issues/40
-winres = { git = "https://github.com/Nilstrieb/winres", branch = "linking-flags" }
+winresource = "0.1"
 
 [features]
 default = []
