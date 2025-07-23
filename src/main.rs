@@ -49,6 +49,7 @@ fn main() {
                 "Rusty AutoClicker could not start due to a graphics initialization error.\n\n\
                 Please ensure your system has a compatible graphics driver installed and supports Vulkan, Metal or DirectX 12.\n\n\
                 If the problem persists, try updating your graphics drivers or running the application on a different machine.",
+            )
             .alert()
             .show()
             .unwrap();
