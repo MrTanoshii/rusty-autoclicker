@@ -10,7 +10,6 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.9"
 device_query = "4.0.1"
 eframe = { version = "0.32", default-features = false, features = [
     "accesskit",
@@ -20,10 +19,11 @@ eframe = { version = "0.32", default-features = false, features = [
     "x11",
 ] }
 image = "0.25"
+native-dialog = "0.9"
+rand = "0.9"
 rdev = "0.5"
 sanitizer = { version = "0.1.7", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
-native-dialog = "0.9"
 wgpu = { version = "25.0", default-features = false, features = ["vulkan", "dx12", "metal"] }
 
 [build-dependencies]
