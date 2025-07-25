@@ -1,4 +1,4 @@
-use std::time::Instant;
+use 
 
 use device_query::{DeviceQuery, DeviceState, Keycode};
 use eframe::egui;
@@ -122,7 +122,7 @@ impl eframe::App for RustyAutoClickerApp {
         if self.is_autoclicking
             && update_now
                 .checked_duration_since(self.last_now)
-                .unwrap()
+                .unwrap_or(Duration::ZERO)
                 .as_millis() as u64
                 >= interval
         {
@@ -131,7 +131,7 @@ impl eframe::App for RustyAutoClickerApp {
                 "{:?} {:?} Click: {:?}",
                 self.click_type,
                 self.click_btn,
-                update_now.checked_duration_since(self.last_now).unwrap(),
+                update_now.checked_duration_since(self.last_now).unwrap_or(Duration::ZERO),
             );
             self.last_now = Instant::now();
 
