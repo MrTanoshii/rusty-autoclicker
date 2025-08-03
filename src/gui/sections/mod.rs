@@ -1,10 +1,10 @@
 use device_query::{Keycode, MouseState};
 use eframe::egui::{self};
-use rdev::Button;
 
 use crate::RustyAutoClickerApp;
 
 mod bars;
+mod buttons;
 mod click_config;
 
 impl RustyAutoClickerApp {
@@ -32,26 +32,6 @@ impl RustyAutoClickerApp {
                         .desired_width(40.0f32)
                         .hint_text("0"),
                 );
-            });
-        });
-    }
-
-    pub fn show_mouse_buttons(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal_wrapped(|ui| {
-            ui.label("Mouse Button");
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                if self.is_autoclicking || self.hotkey_window_open {
-                    ui.disable();
-                };
-                ui.selectable_value(&mut self.click_btn, Button::Right, "Right");
-                if self.is_autoclicking || self.hotkey_window_open {
-                    ui.disable();
-                };
-                ui.selectable_value(&mut self.click_btn, Button::Middle, "Middle");
-                if self.is_autoclicking || self.hotkey_window_open {
-                    ui.disable();
-                };
-                ui.selectable_value(&mut self.click_btn, Button::Left, "Left");
             });
         });
     }
