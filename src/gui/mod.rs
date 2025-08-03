@@ -245,7 +245,7 @@ impl eframe::App for RustyAutoClickerApp {
                 ui.separator();
                 self.show_movement_delay(ui);
                 ui.separator();
-                self.show_mouse_buttons(ui);
+                self.show_buttons(ui);
                 ui.separator();
                 self.show_click_type(ui);
                 ui.separator();

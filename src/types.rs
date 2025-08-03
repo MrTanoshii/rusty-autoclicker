@@ -1,4 +1,6 @@
-use rdev::Button;
+use std::fmt;
+
+use rdev::{Button, Key};
 
 #[derive(PartialEq, Eq, Copy, Clone)]
 pub enum AppMode {
@@ -8,7 +10,7 @@ pub enum AppMode {
 
 #[derive(PartialEq, Copy, Clone)]
 pub struct ClickInfo {
-    pub click_btn: Button,
+    pub click_btn: ClickButton,
     pub click_coord: (f64, f64),
     pub click_position: ClickPosition,
     pub click_type: ClickType,
@@ -24,4 +26,19 @@ pub enum ClickPosition {
 pub enum ClickType {
     Single,
     Double,
+}
+
+#[derive(PartialEq, Copy, Clone, Debug)]
+pub enum ClickButton {
+    Mouse(Button),
+    Key(Key),
+}
+
+impl fmt::Display for ClickButton {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ClickButton::Mouse(button) => write!(f, "{button:?}"),
+            ClickButton::Key(key) => write!(f, "{key:?}"),
+        }
+    }
 }

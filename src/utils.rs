@@ -11,7 +11,7 @@ use crate::{
         DURATION_DOUBLE_CLICK_MIN, MOUSE_STEP_NEG_X, MOUSE_STEP_NEG_Y, MOUSE_STEP_POS_X,
         MOUSE_STEP_POS_Y,
     },
-    types::{AppMode, ClickInfo, ClickPosition, ClickType},
+    types::{AppMode, ClickButton, ClickInfo, ClickPosition, ClickType},
 };
 
 /// Load icon from memory and return it
@@ -193,9 +193,16 @@ pub fn autoclick(
                     y: click_info.click_coord.1,
                 })
             }
-
-            send(&EventType::ButtonPress(click_info.click_btn));
-            send(&EventType::ButtonRelease(click_info.click_btn));
+            match click_info.click_btn {
+                ClickButton::Mouse(button) => {
+                    send(&EventType::ButtonPress(button));
+                    send(&EventType::ButtonRelease(button));
+                }
+                ClickButton::Key(key) => {
+                    send(&EventType::KeyPress(key));
+                    send(&EventType::KeyRelease(key));
+                }
+            }
         }
     // Autoclick to emulate a humanlike clicks
     } else if app_mode == AppMode::Humanlike {
@@ -233,12 +240,22 @@ pub fn autoclick(
                     );
                 }
             }
-
-            send(&EventType::ButtonPress(click_info.click_btn));
-            thread::sleep(Duration::from_millis(
-                rng_thread.random_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
-            ));
-            send(&EventType::ButtonRelease(click_info.click_btn));
+            match click_info.click_btn {
+                ClickButton::Mouse(button) => {
+                    send(&EventType::ButtonPress(button));
+                    thread::sleep(Duration::from_millis(
+                        rng_thread.random_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
+                    ));
+                    send(&EventType::ButtonRelease(button));
+                }
+                ClickButton::Key(key) => {
+                    send(&EventType::KeyPress(key));
+                    thread::sleep(Duration::from_millis(
+                        rng_thread.random_range(DURATION_CLICK_MIN..DURATION_CLICK_MAX),
+                    ));
+                    send(&EventType::KeyRelease(key));
+                }
+            }
         }
     }
 }

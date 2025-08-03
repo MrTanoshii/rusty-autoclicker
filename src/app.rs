@@ -7,7 +7,7 @@ use rdev::Button;
 
 use crate::{
     defines::*,
-    types::{AppMode, ClickPosition, ClickType},
+    types::{AppMode, ClickButton, ClickPosition, ClickType},
 };
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
@@ -58,10 +58,9 @@ pub struct RustyAutoClickerApp {
     pub keys_pressed: Option<Vec<Keycode>>,
 
     // Enums
-    pub click_btn: Button,
+    pub click_btn: ClickButton,
     pub click_type: ClickType,
     pub click_position: ClickPosition,
-
     // RNG
     pub rng_thread: ThreadRng,
 }
@@ -111,7 +110,7 @@ impl Default for RustyAutoClickerApp {
             keys_pressed: None,
 
             // Enums
-            click_btn: Button::Left,
+            click_btn: ClickButton::Mouse(Button::Left),
             click_type: ClickType::Single,
             click_position: ClickPosition::Mouse,
 
