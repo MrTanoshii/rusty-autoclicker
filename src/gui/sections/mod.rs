@@ -61,39 +61,28 @@ impl RustyAutoClickerApp {
 
     pub fn show_autoclicker(&mut self, ui: &mut egui::Ui) {
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-            if self.is_autoclicking {
-                if self.hotkey_window_open {
-                    ui.disable();
-                }
-                if ui
-                    .add_sized(
-                        [120.0f32, 38.0f32],
-                        egui::widgets::Button::new(format!(
-                            "🖱 STOP ({})",
-                            self.key_autoclick.unwrap()
-                        )),
-                    )
-                    .clicked()
-                {
-                    self.is_autoclicking = false;
-                };
+            if self.hotkey_window_open {
+                ui.disable();
+            } else if self.is_autoclicking {
+                ui.add_sized(
+                    [120.0f32, 38.0f32],
+                    egui::widgets::Button::new(format!("🖱 STOP ({})", self.key_autoclick.unwrap())),
+                )
+                .clicked()
+                .then(|| self.is_autoclicking = false);
             } else {
-                if self.hotkey_window_open {
-                    ui.disable();
-                }
                 let text: String = if self.key_autoclick.is_none() {
                     "🖱 START".to_string()
                 } else {
                     format!("🖱 START ({})", self.key_autoclick.unwrap())
                 };
-                if ui
-                    .add_sized([120.0f32, 38.0f32], egui::widgets::Button::new(text))
+                ui.add_sized([120.0f32, 38.0f32], egui::widgets::Button::new(text))
                     .clicked()
-                {
-                    // Start autoclick, first click is delayed
-                    Self::start_autoclick(self, 0u64);
-                    self.is_autoclicking = true
-                }
+                    .then(|| {
+                        // Start autoclick, first click is delayed
+                        Self::start_autoclick(self, 0u64);
+                        self.is_autoclicking = true
+                    });
             }
         });
     }
