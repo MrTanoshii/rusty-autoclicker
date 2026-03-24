@@ -71,10 +71,10 @@ impl RustyAutoClickerApp {
                 .clicked()
                 .then(|| self.is_autoclicking = false);
             } else {
-                let text: String = if self.key_autoclick.is_none() {
-                    "🖱 START".to_string()
+                let text: String = if let Some(hotkey) = self.key_autoclick {
+                    format!("🖱 START ({hotkey})")
                 } else {
-                    format!("🖱 START ({})", self.key_autoclick.unwrap())
+                    "🖱 START".to_string()
                 };
                 ui.add_sized([120.0f32, 38.0f32], egui::widgets::Button::new(text))
                     .clicked()

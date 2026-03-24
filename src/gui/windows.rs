@@ -30,10 +30,10 @@ impl RustyAutoClickerApp {
                     };
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.disable();
-                        let text: String = if self.key_autoclick.is_none() {
-                            "PRESS ANY KEY".to_string()
+                        let text: String = if let Some(pressed_keys) = self.key_autoclick {
+                            format!("{:}", pressed_keys)
                         } else {
-                            format!("{:}", self.key_autoclick.unwrap())
+                            "PRESS ANY KEY".to_string()
                         };
                         ui.add_sized([110.0f32, 32.0f32], egui::widgets::Button::new(text));
                     });
@@ -59,10 +59,10 @@ impl RustyAutoClickerApp {
                     };
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.disable();
-                        let text: String = if self.key_set_coord.is_none() {
-                            "PRESS ANY KEY".to_string()
+                        let text: String = if let Some(pressed_keys) = self.key_set_coord {
+                            format!("{:} / L Click", pressed_keys)
                         } else {
-                            format!("{:} / L Click", self.key_set_coord.unwrap())
+                            "PRESS ANY KEY".to_string()
                         };
                         ui.add_sized([110.0f32, 32.0f32], egui::widgets::Button::new(text));
                     });

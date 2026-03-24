@@ -18,10 +18,10 @@ impl RustyAutoClickerApp {
                     if self.hotkey_window_open {
                         ui.disable();
                     }
-                    let text: String = if self.key_autoclick.is_none() {
-                        "🖱 START".to_string()
+                    let text: String = if let Some(hotkey) = self.key_autoclick {
+                        format!("🖱 START ({hotkey})")
                     } else {
-                        format!("🖱 START ({})", self.key_autoclick.unwrap())
+                        "🖱 START".to_string()
                     };
                     if ui.button(text).clicked() {
                         self.is_autoclicking = true
