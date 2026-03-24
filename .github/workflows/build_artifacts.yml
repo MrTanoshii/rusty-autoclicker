@@ -23,7 +23,7 @@ jobs:
             os: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: rui314/setup-mold@v1 # faster linker
@@ -31,7 +31,7 @@ jobs:
           make-default: false
 
       - name: Setup cache [Linux]
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         if: matrix.os == 'ubuntu-latest'
         with:
           path: |
@@ -68,7 +68,7 @@ jobs:
           rm rusty-autoclicker-${{ matrix.build_target }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rusty-autoclicker-${{ matrix.build_target }}
           path: bin/rusty-autoclicker-*
