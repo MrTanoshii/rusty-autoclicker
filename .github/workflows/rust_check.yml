@@ -35,6 +35,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - name: Update apt-get
+        run: sudo apt-get update
       - name: Setup device_query dependencies
         run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
@@ -50,6 +52,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+      - name: Update apt-get
+        run: sudo apt-get update
       - name: Setup device_query dependencies
         run: sudo apt-get install libx11-dev
       - name: Setup rdev dependencies
@@ -63,6 +67,8 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v6
   #     - uses: dtolnay/rust-toolchain@stable
+  #     - name: Update apt-get
+  #       run: sudo apt-get update
   #     - name: Setup device_query dependencies
   #       run: sudo apt-get install libx11-dev
   #     - name: Setup rdev dependencies
