@@ -10,7 +10,33 @@ use crate::{RustyAutoClickerApp, types::InteractionMode};
 /// button, not by any setting. `.with_resizable(false)` below additionally
 /// makes it impossible for the user to drag-resize it even if they tried.
 const COORD_PICKER_SIZE: egui::Vec2 = egui::vec2(400.0, 65.0);
-const COORD_PICKER_CURSOR_OFFSET: egui::Vec2 = egui::vec2(16.0, 16.0);
+/// Vertical gap between the cursor tip and the top of the picker window.
+/// Horizontally the picker is centered under the cursor instead of offset
+/// to the side — see `clamped_picker_pos` below for why this alone isn't
+/// enough to keep it fully on-screen.
+const COORD_PICKER_VERTICAL_GAP: f32 = 16.0;
+
+/// Compute where the picker window should sit for a given (logical) cursor
+/// position: horizontally centered under the cursor, `COORD_PICKER_VERTICAL_GAP`
+/// below it (so the cursor never overlaps the window), then clamped to stay
+/// fully within the current monitor so it can't get cut off against the
+/// right/bottom edge the way a fixed offset could.
+///
+/// Note: `ViewportInfo::monitor_size` only gives the monitor's *size*, not
+/// its origin, so this assumes the monitor's origin is (0, 0) — correct for
+/// the primary monitor / single-monitor setups. On a multi-monitor layout
+/// where the picker is on a secondary monitor positioned to the left of or
+/// above the primary, the clamp can be slightly off; a real fix needs
+/// per-monitor origin info egui doesn't currently expose here.
+fn clamped_picker_pos(monitor_size: Option<egui::Vec2>, cursor: egui::Pos2) -> egui::Pos2 {
+    let mut x = cursor.x - COORD_PICKER_SIZE.x / 2.0;
+    let mut y = cursor.y + COORD_PICKER_VERTICAL_GAP;
+    if let Some(size) = monitor_size {
+        x = x.clamp(0.0, (size.x - COORD_PICKER_SIZE.x).max(0.0));
+        y = y.clamp(0.0, (size.y - COORD_PICKER_SIZE.y).max(0.0));
+    }
+    egui::pos2(x, y)
+}
 
 impl RustyAutoClickerApp {
     pub fn show_hotkeys_window(&mut self, ctx: &Context) {
@@ -38,7 +64,7 @@ impl RustyAutoClickerApp {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.disable();
                         let text: String = if let Some(pressed_keys) = self.key_autoclick {
-                            format!("{:}", pressed_keys)
+                            crate::utils::abbreviate_keycode(pressed_keys).to_string()
                         } else {
                             "PRESS ANY KEY".to_string()
                         };
@@ -63,7 +89,7 @@ impl RustyAutoClickerApp {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.disable();
                         let text: String = if let Some(pressed_keys) = self.key_open_set_coord {
-                            format!("{:}", pressed_keys)
+                            crate::utils::abbreviate_keycode(pressed_keys).to_string()
                         } else {
                             "PRESS ANY KEY".to_string()
                         };
@@ -88,7 +114,7 @@ impl RustyAutoClickerApp {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.disable();
                         let text: String = if let Some(pressed_keys) = self.key_set_coord {
-                            format!("{:} / L Click", pressed_keys)
+                            format!("{} / L Click", crate::utils::abbreviate_keycode(pressed_keys))
                         } else {
                             "PRESS ANY KEY".to_string()
                         };
@@ -112,7 +138,7 @@ impl RustyAutoClickerApp {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         ui.disable();
                         let text: String = if let Some(pressed_keys) = self.key_hold {
-                            format!("{:}", pressed_keys)
+                            crate::utils::abbreviate_keycode(pressed_keys).to_string()
                         } else {
                             "PRESS ANY KEY".to_string()
                         };
@@ -158,7 +184,17 @@ impl RustyAutoClickerApp {
             shared.confirm_key = self.key_set_coord;
         }
 
-        let target_pos = egui::pos2(mx as f32, my as f32) + COORD_PICKER_CURSOR_OFFSET;
+        // `device_query` reports mouse coords in PHYSICAL screen pixels, but
+        // egui's viewport positioning APIs (`with_position`,
+        // `ViewportCommand::OuterPosition`) expect LOGICAL points. On any
+        // display scale other than 100% these are not the same number, and
+        // the picker drifts further from the real cursor the further it is
+        // from the monitor's origin. Divide by `pixels_per_point()` to
+        // convert physical -> logical before positioning.
+        let ppp = ctx.pixels_per_point();
+        let cursor_logical = egui::pos2(mx as f32 / ppp, my as f32 / ppp);
+        let monitor_size = ctx.input(|i| i.viewport().monitor_size);
+        let target_pos = clamped_picker_pos(monitor_size, cursor_logical);
         let viewport_id = egui::ViewportId::from_hash_of("rusty_autoclicker_coord_picker");
 
         // Request the repaint BEFORE (re-)registering the viewport this
@@ -207,7 +243,15 @@ impl RustyAutoClickerApp {
             // that concern doesn't apply here, and always repositioning
             // removes one more variable from the "why isn't this updating"
             // question.
-            let target = egui::pos2(mx as f32, my as f32) + COORD_PICKER_CURSOR_OFFSET;
+            // Same physical -> logical conversion as the parent side above.
+            // Use THIS viewport's own `pixels_per_point()`, not the root's —
+            // if the picker is dragged onto a monitor with a different scale
+            // factor than the main window's monitor, the two can legitimately
+            // differ.
+            let picker_ppp = picker_ctx.pixels_per_point();
+            let cursor_logical = egui::pos2(mx as f32 / picker_ppp, my as f32 / picker_ppp);
+            let monitor_size = picker_ctx.input(|i| i.viewport().monitor_size);
+            let target = clamped_picker_pos(monitor_size, cursor_logical);
             picker_ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(target));
 
             let mut y_str = my.to_string();
@@ -234,7 +278,7 @@ impl RustyAutoClickerApp {
                             ui.label("X");
                             ui.separator();
                             let key_label = confirm_key
-                                .map(|k| k.to_string())
+                                .map(|k| crate::utils::abbreviate_keycode(k).to_string())
                                 .unwrap_or_else(|| "no key set".to_string());
                             ui.label(format!(" Set with \"{key_label}\" / \"L Click\""));
                         });

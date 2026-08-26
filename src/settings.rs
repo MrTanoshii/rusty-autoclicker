@@ -30,6 +30,15 @@ pub struct Settings {
     pub speed_min_str: String,
     pub speed_max_str: String,
 
+    // Random offset (+/- jitter on the click interval). `#[serde(default)]`
+    // on both so settings.json files saved by older versions (which don't
+    // have these keys at all) still deserialize instead of failing to load
+    // entirely.
+    #[serde(default)]
+    pub random_offset_enabled: bool,
+    #[serde(default = "default_random_offset_str")]
+    pub random_offset_str: String,
+
     // Hotkeys
     pub key_autoclick: Option<String>,
     pub key_open_set_coord: Option<String>,
@@ -41,6 +50,15 @@ pub struct Settings {
     pub click_type: String,
     pub click_position: String,
     pub app_mode: String,
+
+    /// The last keyboard key selected in Keyboard mode, remembered
+    /// independently of `click_btn` (which may currently be Mouse mode).
+    /// Reused so Mouse -> Keyboard restores this instead of resetting to
+    /// Space. Persisted using the same `ClickButton::Key(..)` string form
+    /// as `click_btn` above, purely for convenience (reuses
+    /// `to_setting_string`/`from_setting_string` rather than needing a
+    /// separate key-only serialization helper).
+    pub last_keyboard_key: String,
 
     /// Window inner size [width, height] in logical pixels.
     /// Auto-saved on close; not affected by the Save/Reset buttons.
@@ -67,6 +85,9 @@ impl Settings {
             speed_min_str: app.speed_min_str.clone(),
             speed_max_str: app.speed_max_str.clone(),
 
+            random_offset_enabled: app.random_offset_enabled,
+            random_offset_str: app.random_offset_str.clone(),
+
             key_autoclick: app.key_autoclick.map(|k| k.to_string()),
             key_open_set_coord: app.key_open_set_coord.map(|k| k.to_string()),
             key_set_coord: app.key_set_coord.map(|k| k.to_string()),
@@ -76,6 +97,7 @@ impl Settings {
             click_type: click_type_to_str(app.click_type).to_owned(),
             click_position: click_position_to_str(app.click_position).to_owned(),
             app_mode: app_mode_to_str(app.app_mode).to_owned(),
+            last_keyboard_key: ClickButton::Key(app.last_keyboard_key).to_setting_string(),
 
             window_size: Some(app.last_window_size),
             window_position: Some([app.last_window_pos.x, app.last_window_pos.y]),
@@ -98,6 +120,9 @@ impl Settings {
         app.speed_min_str = self.speed_min_str.clone();
         app.speed_max_str = self.speed_max_str.clone();
 
+        app.random_offset_enabled = self.random_offset_enabled;
+        app.random_offset_str = self.random_offset_str.clone();
+
         app.key_autoclick = parse_keycode(self.key_autoclick.as_deref());
         app.key_open_set_coord = parse_keycode(self.key_open_set_coord.as_deref());
         app.key_set_coord = parse_keycode(self.key_set_coord.as_deref());
@@ -110,10 +135,18 @@ impl Settings {
         app.click_position =
             str_to_click_position(&self.click_position).unwrap_or(app.click_position);
         app.app_mode = str_to_app_mode(&self.app_mode).unwrap_or(app.app_mode);
+
+        if let Some(ClickButton::Key(k)) = ClickButton::from_setting_string(&self.last_keyboard_key) {
+            app.last_keyboard_key = k;
+        }
     }
 }
 
 // ---------- helpers --------------------------------------------------------
+
+fn default_random_offset_str() -> String {
+    crate::defines::DEFAULT_RANDOM_OFFSET_STR.to_owned()
+}
 
 fn parse_keycode(s: Option<&str>) -> Option<Keycode> {
     s.and_then(|s| s.parse::<Keycode>().ok())

@@ -20,6 +20,7 @@ pub enum InteractionMode {
     SettingOpenCoordKey,
     SettingSetCoordKey,
     SettingHoldKey,
+    SettingClickKey,
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -62,7 +63,7 @@ impl fmt::Display for ClickButton {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ClickButton::Mouse(button) => write!(f, "{button:?}"),
-            ClickButton::Key(key) => write!(f, "{key:?}"),
+            ClickButton::Key(key) => write!(f, "{}", crate::utils::abbreviate_key(*key)),
         }
     }
 }
@@ -143,6 +144,7 @@ key_names!(
     Function,
     // Navigation
     UpArrow, DownArrow, LeftArrow, RightArrow, Home, End, PageUp, PageDown, Insert, Delete,
+    Backspace,
     Escape, Return, Tab, Space,
     // Function keys
     F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,

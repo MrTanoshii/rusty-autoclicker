@@ -14,7 +14,10 @@ mod utils;
 
 use crate::{
     app::RustyAutoClickerApp,
-    defines::{APP_NAME, WINDOW_DEFAULT_X, WINDOW_DEFAULT_Y, WINDOW_HEIGHT, WINDOW_WIDTH},
+    defines::{
+        APP_NAME, WINDOW_DEFAULT_X, WINDOW_DEFAULT_Y, WINDOW_HEIGHT, WINDOW_MIN_HEIGHT,
+        WINDOW_MIN_WIDTH, WINDOW_WIDTH,
+    },
     settings::load_settings,
     utils::load_icon,
 };
@@ -32,19 +35,32 @@ fn main() {
         .and_then(|s| s.window_position)
         .map(|[x, y]| egui::pos2(x, y))
         .unwrap_or_else(|| egui::pos2(WINDOW_DEFAULT_X, WINDOW_DEFAULT_Y));
+    // Clamp to the minimum here too, before the OS window is even created —
+    // `app.rs::new()` clamps again once the app has an `egui::Context` to
+    // work with, but a degenerate saved size should never reach
+    // `with_inner_size` in the first place either.
     let start_size = saved
         .as_ref()
         .and_then(|s| s.window_size)
-        .map(|[w, h]| egui::vec2(w, h))
+        .map(|[w, h]| egui::vec2(w.max(WINDOW_MIN_WIDTH), h.max(WINDOW_MIN_HEIGHT)))
         .unwrap_or_else(|| egui::vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
 
     let native_options = eframe::NativeOptions {
         renderer: eframe::Renderer::Wgpu,
         viewport: ViewportBuilder::default()
-            .with_always_on_top()
+            // Deliberately NOT always-on-top for the main window — it
+            // should behave like a normal window (can be covered by other
+            // windows, brought back via the taskbar, etc). The coordinate
+            // picker's OWN always-on-top, in `gui/windows.rs`, is separate
+            // and stays as-is: it genuinely needs to stay visible/clickable
+            // above whatever window you're picking coordinates from.
             .with_decorations(true)
             // Start at the saved size — no flicker
             .with_inner_size(start_size)
+            // Enforced floor: small enough to stay flexible, large enough
+            // that the window controls plus one full row of the most
+            // important controls (Click Interval) always stay usable.
+            .with_min_inner_size(egui::vec2(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT))
             // Start at the saved position — no flicker
             .with_position(start_pos)
             .with_resizable(true)
