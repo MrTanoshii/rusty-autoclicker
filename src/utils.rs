@@ -1,8 +1,9 @@
 use std::{env, thread, time::Duration};
 
+use device_query::Keycode;
 use eframe::emath::Numeric;
 use rand::{RngExt, prelude::ThreadRng};
-use rdev::{EventType, SimulateError, simulate};
+use rdev::{EventType, Key, SimulateError, simulate};
 use sanitizer::prelude::StringSanitizer;
 
 use crate::{
@@ -15,6 +16,326 @@ use crate::{
     },
     types::{AppMode, ClickButton, ClickInfo, ClickPosition},
 };
+
+/// Abbreviated, ≤8-character display form of an `rdev::Key`, for compact
+/// display in the click-button dropdown, capture feedback/error messages,
+/// and anywhere else a click-button key is shown. This is the single
+/// source of truth for that formatting — don't use `{:?}` / `stringify!`
+/// on `Key` directly, or the dropdown and the hotkey bar will drift apart
+/// again (which is the whole reason this exists: "KeyF" in the dropdown vs
+/// "F" in the hotkey bar for what is conceptually the same key).
+///
+/// Kept in sync 1:1 with `abbreviate_keycode` below for every key that
+/// exists in both enums, so e.g. the F key always reads "F" whether it
+/// came from a hotkey capture or the click-button dropdown.
+pub fn abbreviate_key(key: Key) -> &'static str {
+    use Key as K;
+    match key {
+        K::KeyA => "A", K::KeyB => "B", K::KeyC => "C", K::KeyD => "D", K::KeyE => "E",
+        K::KeyF => "F", K::KeyG => "G", K::KeyH => "H", K::KeyI => "I", K::KeyJ => "J",
+        K::KeyK => "K", K::KeyL => "L", K::KeyM => "M", K::KeyN => "N", K::KeyO => "O",
+        K::KeyP => "P", K::KeyQ => "Q", K::KeyR => "R", K::KeyS => "S", K::KeyT => "T",
+        K::KeyU => "U", K::KeyV => "V", K::KeyW => "W", K::KeyX => "X", K::KeyY => "Y",
+        K::KeyZ => "Z",
+
+        K::Num0 => "0", K::Num1 => "1", K::Num2 => "2", K::Num3 => "3", K::Num4 => "4",
+        K::Num5 => "5", K::Num6 => "6", K::Num7 => "7", K::Num8 => "8", K::Num9 => "9",
+
+        K::F1 => "F1", K::F2 => "F2", K::F3 => "F3", K::F4 => "F4", K::F5 => "F5",
+        K::F6 => "F6", K::F7 => "F7", K::F8 => "F8", K::F9 => "F9", K::F10 => "F10",
+        K::F11 => "F11", K::F12 => "F12",
+
+        K::Escape => "Escape",
+        K::Space => "Space",
+
+        K::ControlLeft => "LCtrl",
+        K::ControlRight => "RCtrl",
+        K::ShiftLeft => "LShift",
+        K::ShiftRight => "RShift",
+        K::Alt => "Alt",
+        K::AltGr => "AltGr",
+        K::MetaLeft => "LMeta",
+        K::MetaRight => "RMeta",
+        K::Function => "Fn",
+
+        K::Return => "Enter",
+        K::UpArrow => "Up",
+        K::DownArrow => "Down",
+        K::LeftArrow => "Left",
+        K::RightArrow => "Right",
+
+        K::CapsLock => "CapsLock",
+        K::Tab => "Tab",
+        K::Home => "Home",
+        K::End => "End",
+        K::PageUp => "PageUp",
+        K::PageDown => "PageDown",
+        K::Insert => "Insert",
+        K::Delete => "Delete",
+        K::Backspace => "Backspc",
+
+        K::PrintScreen => "PrtSc",
+        K::ScrollLock => "ScrLk",
+        K::Pause => "Pause",
+        K::NumLock => "NumLock",
+
+        K::BackQuote => "`",
+        K::Minus => "-",
+        K::Equal => "=",
+        K::LeftBracket => "[",
+        K::RightBracket => "]",
+        K::SemiColon => ";",
+        K::Quote => "'",
+        K::BackSlash => "\\",
+        K::IntlBackslash => "IntlBS",
+        K::Comma => ",",
+        K::Dot => ".",
+        K::Slash => "/",
+
+        K::KpReturn => "NumEnt",
+        K::KpMinus => "Num-",
+        K::KpPlus => "Num+",
+        K::KpMultiply => "Num*",
+        K::KpDivide => "Num/",
+        K::Kp0 => "Num0", K::Kp1 => "Num1", K::Kp2 => "Num2", K::Kp3 => "Num3",
+        K::Kp4 => "Num4", K::Kp5 => "Num5", K::Kp6 => "Num6", K::Kp7 => "Num7",
+        K::Kp8 => "Num8", K::Kp9 => "Num9",
+        K::KpDelete => "Num.",
+
+        // Anything outside the dropdown's selectable set (click_btn can
+        // only ever hold a value the UI let the user pick).
+        _ => "?",
+    }
+}
+
+/// Abbreviated, ≤8-character display form of a `device_query::Keycode`,
+/// for the top hotkey bar and the Hotkeys window. Kept 1:1 in sync with
+/// `abbreviate_key` above for every key both enums share — see that
+/// function's doc comment for why this matters.
+///
+/// Unlike `abbreviate_key`, this is exhaustive over every `Keycode`
+/// variant rather than falling back to a placeholder, since a hotkey field
+/// can genuinely hold any of them (including ones with no dropdown/rdev
+/// counterpart, like F13-F20 or the Mac Command/Option keys).
+pub fn abbreviate_keycode(keycode: Keycode) -> &'static str {
+    use Keycode as K;
+    match keycode {
+        K::Key0 => "0", K::Key1 => "1", K::Key2 => "2", K::Key3 => "3", K::Key4 => "4",
+        K::Key5 => "5", K::Key6 => "6", K::Key7 => "7", K::Key8 => "8", K::Key9 => "9",
+
+        K::A => "A", K::B => "B", K::C => "C", K::D => "D", K::E => "E", K::F => "F",
+        K::G => "G", K::H => "H", K::I => "I", K::J => "J", K::K => "K", K::L => "L",
+        K::M => "M", K::N => "N", K::O => "O", K::P => "P", K::Q => "Q", K::R => "R",
+        K::S => "S", K::T => "T", K::U => "U", K::V => "V", K::W => "W", K::X => "X",
+        K::Y => "Y", K::Z => "Z",
+
+        K::F1 => "F1", K::F2 => "F2", K::F3 => "F3", K::F4 => "F4", K::F5 => "F5",
+        K::F6 => "F6", K::F7 => "F7", K::F8 => "F8", K::F9 => "F9", K::F10 => "F10",
+        K::F11 => "F11", K::F12 => "F12", K::F13 => "F13", K::F14 => "F14",
+        K::F15 => "F15", K::F16 => "F16", K::F17 => "F17", K::F18 => "F18",
+        K::F19 => "F19", K::F20 => "F20",
+
+        K::Escape => "Escape",
+        K::Space => "Space",
+
+        K::LControl => "LCtrl",
+        K::RControl => "RCtrl",
+        K::LShift => "LShift",
+        K::RShift => "RShift",
+        K::LAlt => "Alt",
+        K::RAlt => "AltGr",
+        // Mac-only, no rdev/dropdown counterpart.
+        K::Command => "Cmd",
+        K::RCommand => "RCmd",
+        K::LOption => "LOpt",
+        K::ROption => "ROpt",
+        K::LMeta => "LMeta",
+        K::RMeta => "RMeta",
+
+        K::Enter => "Enter",
+        K::Up => "Up",
+        K::Down => "Down",
+        K::Left => "Left",
+        K::Right => "Right",
+
+        K::Backspace => "Backspc",
+
+        K::CapsLock => "CapsLock",
+        K::Tab => "Tab",
+        K::Home => "Home",
+        K::End => "End",
+        K::PageUp => "PageUp",
+        K::PageDown => "PageDown",
+        K::Insert => "Insert",
+        K::Delete => "Delete",
+
+        K::Numpad0 => "Num0", K::Numpad1 => "Num1", K::Numpad2 => "Num2",
+        K::Numpad3 => "Num3", K::Numpad4 => "Num4", K::Numpad5 => "Num5",
+        K::Numpad6 => "Num6", K::Numpad7 => "Num7", K::Numpad8 => "Num8",
+        K::Numpad9 => "Num9",
+        K::NumpadSubtract => "Num-",
+        K::NumpadAdd => "Num+",
+        K::NumpadDivide => "Num/",
+        K::NumpadMultiply => "Num*",
+        // No rdev/dropdown counterpart used in this app.
+        K::NumpadEquals => "Num=",
+        K::NumpadEnter => "NumEnt",
+        K::NumpadDecimal => "Num.",
+
+        K::Grave => "`",
+        K::Minus => "-",
+        K::Equal => "=",
+        K::LeftBracket => "[",
+        K::RightBracket => "]",
+        K::BackSlash => "\\",
+        K::Semicolon => ";",
+        K::Apostrophe => "'",
+        K::Comma => ",",
+        K::Dot => ".",
+        K::Slash => "/",
+    }
+}
+
+/// Map a globally-polled `device_query::Keycode` (used for hotkeys) to the
+/// `rdev::Key` it represents (used for the simulated click button), so a
+/// physically-pressed key can be used to select a click button directly
+/// instead of scrolling the dropdown in `gui/sections/buttons.rs`.
+///
+/// Returns `None` for keys that either have no `rdev::Key` counterpart
+/// offered in the click-button dropdown, or that `device_query` can't
+/// report at all (e.g. PrintScreen/ScrollLock/Pause/NumLock aren't polled
+/// by `device_query`, so they can never reach this function from a live
+/// key-press — the dropdown remains the only way to select those).
+/// Callers should fall back to the manual dropdown when this returns `None`.
+pub fn keycode_to_rdev_key(keycode: Keycode) -> Option<Key> {
+    use Keycode as K;
+    Some(match keycode {
+        K::Key0 => Key::Num0,
+        K::Key1 => Key::Num1,
+        K::Key2 => Key::Num2,
+        K::Key3 => Key::Num3,
+        K::Key4 => Key::Num4,
+        K::Key5 => Key::Num5,
+        K::Key6 => Key::Num6,
+        K::Key7 => Key::Num7,
+        K::Key8 => Key::Num8,
+        K::Key9 => Key::Num9,
+
+        K::A => Key::KeyA,
+        K::B => Key::KeyB,
+        K::C => Key::KeyC,
+        K::D => Key::KeyD,
+        K::E => Key::KeyE,
+        K::F => Key::KeyF,
+        K::G => Key::KeyG,
+        K::H => Key::KeyH,
+        K::I => Key::KeyI,
+        K::J => Key::KeyJ,
+        K::K => Key::KeyK,
+        K::L => Key::KeyL,
+        K::M => Key::KeyM,
+        K::N => Key::KeyN,
+        K::O => Key::KeyO,
+        K::P => Key::KeyP,
+        K::Q => Key::KeyQ,
+        K::R => Key::KeyR,
+        K::S => Key::KeyS,
+        K::T => Key::KeyT,
+        K::U => Key::KeyU,
+        K::V => Key::KeyV,
+        K::W => Key::KeyW,
+        K::X => Key::KeyX,
+        K::Y => Key::KeyY,
+        K::Z => Key::KeyZ,
+
+        K::F1 => Key::F1,
+        K::F2 => Key::F2,
+        K::F3 => Key::F3,
+        K::F4 => Key::F4,
+        K::F5 => Key::F5,
+        K::F6 => Key::F6,
+        K::F7 => Key::F7,
+        K::F8 => Key::F8,
+        K::F9 => Key::F9,
+        K::F10 => Key::F10,
+        K::F11 => Key::F11,
+        K::F12 => Key::F12,
+
+        K::Escape => Key::Escape,
+        K::Space => Key::Space,
+
+        K::LControl => Key::ControlLeft,
+        K::RControl => Key::ControlRight,
+        K::LShift => Key::ShiftLeft,
+        K::RShift => Key::ShiftRight,
+        K::LAlt => Key::Alt,
+        K::RAlt => Key::AltGr,
+        K::LMeta => Key::MetaLeft,
+        K::RMeta => Key::MetaRight,
+
+        K::Enter => Key::Return,
+        K::Up => Key::UpArrow,
+        K::Down => Key::DownArrow,
+        K::Left => Key::LeftArrow,
+        K::Right => Key::RightArrow,
+
+        K::CapsLock => Key::CapsLock,
+        K::Tab => Key::Tab,
+        K::Home => Key::Home,
+        K::End => Key::End,
+        K::PageUp => Key::PageUp,
+        K::PageDown => Key::PageDown,
+        K::Insert => Key::Insert,
+        K::Delete => Key::Delete,
+        // Was previously missing from this table entirely, which is what
+        // caused a captured Backspace to wrongly report "not supported for
+        // auto-capture" — device_query DOES report Backspace fine; it's
+        // rdev::Key::Backspace that just wasn't in the dropdown yet either.
+        // Both are now wired up (see the dropdown/key_names! list and the
+        // abbreviation tables).
+        K::Backspace => Key::Backspace,
+
+        K::Numpad0 => Key::Kp0,
+        K::Numpad1 => Key::Kp1,
+        K::Numpad2 => Key::Kp2,
+        K::Numpad3 => Key::Kp3,
+        K::Numpad4 => Key::Kp4,
+        K::Numpad5 => Key::Kp5,
+        K::Numpad6 => Key::Kp6,
+        K::Numpad7 => Key::Kp7,
+        K::Numpad8 => Key::Kp8,
+        K::Numpad9 => Key::Kp9,
+        K::NumpadSubtract => Key::KpMinus,
+        K::NumpadAdd => Key::KpPlus,
+        K::NumpadDivide => Key::KpDivide,
+        K::NumpadMultiply => Key::KpMultiply,
+        K::NumpadEnter => Key::KpReturn,
+        // rdev has no separate "decimal" numpad key — on most keyboards
+        // this physical key reports as Delete when Num Lock is off and as
+        // a digit/decimal-point when it's on, and rdev only models the
+        // Delete side of that (`KpDelete`). This was previously missing
+        // too, causing the same false "not supported" error as Backspace.
+        K::NumpadDecimal => Key::KpDelete,
+
+        K::Grave => Key::BackQuote,
+        K::Minus => Key::Minus,
+        K::Equal => Key::Equal,
+        K::LeftBracket => Key::LeftBracket,
+        K::RightBracket => Key::RightBracket,
+        K::BackSlash => Key::BackSlash,
+        K::Semicolon => Key::SemiColon,
+        K::Apostrophe => Key::Quote,
+        K::Comma => Key::Comma,
+        K::Dot => Key::Dot,
+        K::Slash => Key::Slash,
+
+        // No rdev::Key counterpart offered in the dropdown (NumpadEquals,
+        // Command/RCommand/LOption/ROption, F13+): fall back to manual
+        // selection. These genuinely have no equivalent, unlike Backspace
+        // and NumpadDecimal above.
+        _ => return None,
+    })
+}
 
 /// Load icon from memory and return it
 pub fn load_icon() -> eframe::egui::IconData {
